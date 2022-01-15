@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if latest_articles_list %}
+<div class="article-list">
+    {% for article in latest_articles_list %}
+    <div class="infobox">
+        <div class="box-header">
+            <a href="{% url 'articles:article' article.title %}">{{ article.title }}</a>
+        </div>
+        <div class="box-subheader">
+            {{ article.author }} -- {{ article.pub_date}}
+        </div>
+        <div class="box-text">
+            future article description
+        </div>
+        <div class="box-subtext">
+            <a href = "{% url 'articles:delete_article' article.id %}">Delete</a>
+            <a href = "{% url 'articles:edit_article' article.id %}">Edit</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p>No articles are available.</p>
+{% endif %}
+<p>
+    <a href="{% url 'articles:create_article' %}">Write an article.</a>
+</p>
+
+
+{% endblock %}
+

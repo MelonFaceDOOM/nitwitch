@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>{{ participant.name }}</h1>
+
+    <div class="suggested-times">
+        {% with suggested_times_list=participant.suggested_times.all %}
+        {% if suggested_times_list %}
+        <ul>
+            {% for suggested_time in suggested_times_list %}
+            <li>{{ suggested_time.start_time|date:'Y-m-d'}} - {{ suggested_time.end_time|date:'Y-m-d'}}</li>
+            <form id="delete-suggested-time" method="post" action="{% url 'scheduling:delete_suggested_time' %}">
+                {% csrf_token %}
+                <input type="hidden" name="suggested-time-id" value="{{ suggested_time.id }}" />
+                <a href="#" onclick="document.forms[0].submit();return false;">Delete suggested time</a>
+            </form>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>This participant has no suggested times.</p>
+        {% endif %}
+        {% endwith %}
+    </div>
+
+    <form action="{% url 'scheduling:add_suggested_time' participant.id %}" method="post">
+    {% csrf_token %}
+    <fieldset>
+        <legend><h1>Add suggested time for this participant.</h1></legend>
+        {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+        <label for="start-time">start time:</label><br>
+        <input class="article-field" type="text" name="start-time" id="start-time"><br><br>
+        <label for="end-time">start time:</label><br>
+        <input class="article-field" type="text" name="end-time" id="end-time"><br><br>
+    </fieldset>
+        <input type="submit" value="Submit">
+    </form>
+
+{% endblock %}

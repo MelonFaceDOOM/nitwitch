@@ -1,0 +1,185 @@
+@font-face {
+  font-family: 'Poppins-Regular';
+  src: local('Poppins-Regular'),
+       url('../static/fonts/Poppins-Regular.ttf') format("truetype");
+}
+
+:root {
+  --main-background: #211626;
+  --moonlight: #F4DD96;
+  --green: #4C8B68;
+  --grey: #b0b0b0;
+}
+
+body {
+    background: var(--main-background);
+    color: var(--grey);
+}
+
+.container {
+    display: grid;
+    /*margin: 0px 100px;*/
+    grid-template-columns: minmax(1px, 2fr) minmax(25px, 0.8fr) minmax(10px, 2fr) minmax(60px, 3fr) minmax(200px, 7fr) minmax(60px, 3fr) minmax(10px, 2fr) minmax(25px, 0.8fr) minmax(1px, 2fr);
+    justify-items: center;
+    grid-column-gap: 10px;
+    grid-row-gap: 50px;
+}
+
+.header {
+  font-family: Poppins-Regular;
+}
+
+.left-header {
+    grid-column: 3/5;
+}
+
+.right-header {
+    grid-column: 6/8;
+}
+
+.content {
+    grid-column: 4/7;
+    width: 100%;
+    text-align: center;
+}
+
+.header-logo {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  width: 525px;
+}
+
+div.diagonal-container {
+  width: 75px;
+  height: 50px;
+}
+
+.to-right {
+  background: linear-gradient(146.25deg, transparent calc(50% - 2px), var(--green) 50%, transparent calc(50% + 3px) );
+}
+
+.to-left {
+  background: linear-gradient(33.75deg, transparent calc(50% - 2px), var(--green) 50%, transparent calc(50% + 3px) );
+}
+
+.mooncolumn {
+    width: 100%;
+}
+
+.moonbox {
+  margin-top: 100%;
+  position: relative;
+  width: 100%;
+  width: 100%;
+  padding-top: 100%; /* 1:1 Aspect Ratio */
+}
+
+.moon {
+  height: 100%;
+  width: 100%;
+}
+
+.moonlight {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background-color: var(--moonlight);
+  border-radius: 50%;
+}
+.moonshadow {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background-color: var(--main-background);
+}
+
+.waxing-crescent {
+  border-radius: 50%;
+  right: 25%;
+}
+
+.waning-crescent {
+  border-radius: 50%;
+  left: 25%;
+}
+
+.third-quarter {
+  border-radius: 0%;
+  left: 50%;
+}
+
+.first-quarter {
+  border-radius: 0%;
+  right: 50%;
+}
+
+.waning-gibbous {
+  width: 70%;
+  left: 15%;
+}
+
+.waxing-gibbous {
+  width: 70%;
+  right: 15%;
+}
+
+.article-list {
+  text-align: left;
+}
+
+label {
+    display: inline-block;
+    float: left;
+    clear: left;
+    text-align: right;
+}
+
+input {
+  display: inline-block;
+  float: left;
+}
+
+textarea.article-text {
+  height: 500px;
+  width: 100%;
+}
+
+img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.box {
+  outline-style: solid;
+  padding: 0.5rem;
+}
+
+.infobox {
+  outline-style: double;
+  margin-top: 1rem;
+  padding: 0.3rem;
+}
+
+.box-header {
+  font-family: Poppins-Regular;
+  padding: 0.2rem;
+}
+
+.box-subheader {
+  padding: 0.3rem;
+}
+
+.box-text {
+
+}
+
+.box-subtext {
+  text-align: right;
+}
+
+/* markup css */
+.article-header {
+  margin-top: 3rem;
+  margin-bottom: 0.3rem;
+  font-size: 2rem;
+}

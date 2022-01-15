@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>{{ event.title }}</h1>
+    <p> {{ event.date_created }} </p>
+
+    <div class="participant-list">
+        {% with participant_list=event.participant_set.all %}
+        {% if participant_list %}
+        <ul>
+            {% for participant in participant_list %}
+            <li><a href="{% url 'scheduling:participant' participant.id %}">{{ participant.name }}</a></li>
+            <form id="delete-participant" method="post" action="{% url 'scheduling:delete_participant' %}">
+                {% csrf_token %}
+                <input type="hidden" name="participant-id" value="{{ participant.id }}" />
+                <a href="#" onclick="document.forms[0].submit();return false;">Delete Participant</a>
+            </form>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>This event has no participants.</p>
+        {% endif %}
+        {% endwith %}
+    </div>
+
+    <form action="{% url 'scheduling:add_participant' event.id %}" method="post">
+    {% csrf_token %}
+    <fieldset>
+        <legend><h1>Add participant to event.</h1></legend>
+        {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+        <label for="participant-name">Participant name:</label><br>
+        <input class="article-field" type="text" name="participant-name" id="participant-name"><br><br>
+    </fieldset>
+        <input type="submit" value="Submit">
+    </form>
+
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <form action="{% url 'scheduling:submit_event' %}" method="post">
+    {% csrf_token %}
+    <fieldset>
+        <legend><h1>Create an event.</h1></legend>
+        {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+        <label for="title">title:</label><br>
+        <input class="article-field" type="text" name="title" id="title"><br><br>
+    </fieldset>
+    <input type="submit" value="Submit">
+    </form>
+{% endblock %}
+

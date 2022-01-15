@@ -1,0 +1,28 @@
+{% load static %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'polls/style.css' %}">
+
+{% if latest_question_list %}
+    <ul>
+    {% for question in latest_question_list %}
+        <li><a href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a> {{ question.pub_date }}</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No polls are available.</p>
+{% endif %}
+
+<form action="{% url 'polls:submit_question' %}" method="post">
+{% csrf_token %}
+<fieldset>
+    <legend><h1>Submit a poll question.</h1></legend>
+    {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+    <label for="question_text">Poll Question:</label>
+    <input type="text" name="question_text" id="question_text"><br>
+    <label for="choice1">Poll Choice 1:</label>
+    <input type="text" name="choice[]" id="choice1"><br>
+    <label for="choice2">Poll Choice 2:</label>
+    <input type="text" name="choice[]" id="choice2"><br>
+</fieldset>
+<input type="submit" value="Submit">
+</form>

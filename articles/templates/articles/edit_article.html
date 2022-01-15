@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<form action="{% url 'articles:edit_article' article.id %}" method="POST">
+    {% csrf_token %}
+    <fieldset>
+        <legend><h1>Submit an article.</h1></legend>
+        {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+        <label for="author">author:</label><br>
+        <input class="article-field" type="text" name="author" id="author" value="{{ article.author }}"><br><br>
+        <label for="title">title:</label><br>
+        <input class="article-field" type="text" name="title" id="title" value="{{ article.title }}"><br><br>
+        <label for="article-text">article_text:</label><br>
+        <div class="post-form-buttons" align="right">
+            <button type="button" id="bold-tag" class="btn btn-info" onClick="insertAtCursor('article-text', '[b]', '[/b]')">b</button>
+            <button type="button" id="italics-tag" class="btn btn-info" onClick="insertAtCursor('article-text', '[i]', '[/i]')">i</button>
+            <button type="button" id="quote-tag" class="btn btn-info" onClick="insertAtCursor('article-text', '[quote]', '[/quote]')">q</button>
+            <button type="button" id="spoiler-tag" class="btn btn-info" onClick="insertAtCursor('article-text', '[spoiler]', '[/spoiler]')">sp</button>
+            <button type="button" id="image-tag" class="btn btn-info" onClick="insertAtCursor('article-text', '[img]', '[/img]')">im</button>
+            <button type="button" id="youtube-tag" class="btn btn-info" onClick="insertAtCursor('article-text', '[yt]', '[/yt]')">yt</button>
+        </div>
+        <textarea class="article-text" name="article-text" id="article-text">{{ article.article_text }}</textarea><br><br>
+    </fieldset>
+    <input type="submit" value="Submit">
+</form>
+
+<h1>Article Images</h1>
+<hr>
+{% if article.images%}
+<ul>
+{% for image in article.images.all  %}
+    <li><a href="{{ image.image.url }}">{{image.image.url}}</a></li>
+{% endfor %}
+</ul>
+{% endif %}
+
+<form action="{% url 'articles:submit_images' article.id %}" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="article-id" value="{{ article.id }}" />
+    <input type="file" id="images" name="images" multiple />
+    <input class="submit" type="submit" value="add" />
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+    <script type="text/javascript" src="{% static 'js/melon_markup.js' %}"></script>
+{% endblock %}

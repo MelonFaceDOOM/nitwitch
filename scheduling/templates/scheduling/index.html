@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="event-list">
+        {% if latest_events_list %}
+        <ul>
+            {% for event in latest_events_list %}
+            <li><a href="{% url 'scheduling:event' event.id %}">{{ event.title }}</a></li>
+            <form id="delete-event" method="post" action="{% url 'scheduling:delete_event' %}">
+                {% csrf_token %}
+                <input type="hidden" name="event-id" value="{{ event.id }}" />
+                <a href="#" onclick="document.forms[0].submit();return false;">Delete Event</a>
+            </form>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No events are currently scheduled.</p>
+        {% endif %}
+        <p>
+            <a href="{% url 'scheduling:create_event' %}">Create an event.</a>
+        </p>
+    </div>
+{% endblock %}
+
