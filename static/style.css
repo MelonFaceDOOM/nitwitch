@@ -16,6 +16,10 @@ body {
     color: var(--grey);
 }
 
+h1 {
+  font-size: 3rem;
+}
+
 .container {
     display: grid;
     /*margin: 0px 100px;*/
@@ -30,17 +34,18 @@ body {
 }
 
 .left-header {
-    grid-column: 3/5;
+  grid-column: 3/5;
 }
 
 .right-header {
-    grid-column: 6/8;
+  grid-column: 6/8;
 }
 
 .content {
-    grid-column: 4/7;
-    width: 100%;
-    text-align: center;
+  grid-column: 4/7;
+  width: 100%;
+  text-align: center;
+  overflow-wrap: break-word;
 }
 
 .header-logo {

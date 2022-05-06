@@ -8,5 +8,5 @@ def index(request):
     # Render the HTML template index.html
     #return render(request, 'index.html')
 
-    article = get_object_or_404(Article, title='sss')
+    article = get_object_or_404(Article, title='Stupid Shapes')
     return render(request, 'articles/article.html', {'article': article})

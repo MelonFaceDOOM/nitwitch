@@ -19,6 +19,8 @@
             <button type="button" id="spoiler-tag" class="btn btn-info" onClick="insertAtCursor('article-text', '[spoiler]', '[/spoiler]')">sp</button>
             <button type="button" id="image-tag" class="btn btn-info" onClick="insertAtCursor('article-text', '[img]', '[/img]')">im</button>
             <button type="button" id="youtube-tag" class="btn btn-info" onClick="insertAtCursor('article-text', '[yt]', '[/yt]')">yt</button>
+            <button type="button" id="box-tag" class="btn btn-info" onClick="insertAtCursor('article-text', '[box]', '[/box]')">box</button>
+            <button type="button" id="header-tag" class="btn btn-info" onClick="insertAtCursor('article-text', '[header]', '[/header]')">header</button>
         </div>
         <textarea class="article-text" name="article-text" id="article-text">{{ article.article_text }}</textarea><br><br>
     </fieldset>

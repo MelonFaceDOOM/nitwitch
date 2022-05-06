@@ -1,6 +1,6 @@
 from django.db import models
 import datetime
-from static.markup import melon_markup
+from markup import melon_markup
 import secrets
 
 

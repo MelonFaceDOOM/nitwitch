@@ -1,6 +1,6 @@
 import json
 import os
-from static.markup.tags import tags
+from markup.tags import tags
 import re
 
 

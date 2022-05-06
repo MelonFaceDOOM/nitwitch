@@ -19,8 +19,8 @@ from nitwitch import views
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('articles/', include('articles.urls')),
+    # path('articles/', include('articles.urls')),
     # path('polls/', include('polls.urls')),
-    path('scheduling/', include('scheduling.urls')),
-    path('admin/', admin.site.urls),
+    # path('scheduling/', include('scheduling.urls')),
+    # path('admin/', admin.site.urls),
 ]
