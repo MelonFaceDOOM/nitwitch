@@ -15,18 +15,41 @@
             future article description
         </div>
         <div class="box-subtext">
-            <a href = "{% url 'articles:delete_article' article.id %}">Delete</a>
-            <a href = "{% url 'articles:edit_article' article.id %}">Edit</a>
+            {% if perms.articles.delete_article %}
+                <a href = "{% url 'articles:delete_article' article.id %}">Delete</a>
+            {% endif %}
+            {% if perms.articles.change_article %}
+                <a href = "{% url 'articles:edit_article' article.id %}">Edit</a>
+            {% endif %}
         </div>
     </div>
     {% endfor %}
 </div>
+<div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
 {% else %}
 <p>No articles are available.</p>
 {% endif %}
+{% if perms.articles.add_article %}
 <p>
     <a href="{% url 'articles:create_article' %}">Write an article.</a>
 </p>
+{% endif %}
 
 
 {% endblock %}

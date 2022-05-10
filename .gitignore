@@ -5,3 +5,4 @@ venv/
 nitwitch_scripts/
 config.py
 devprodtodo.txt
+.env

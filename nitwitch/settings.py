@@ -23,12 +23,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config.SECRET_KEY
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-
-ALLOWED_HOSTS = ['68.183.52.128', 'nitwitch.com', 'www.nitwitch.com']
-
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -41,8 +35,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'storages'
-]
+    'storages',
+    'accounts',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount'
+    ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -123,33 +122,50 @@ USE_L10N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.2/howto/static-files/
-if config.USE_S3:
-    AWS_ACCESS_KEY_ID = config.AWS_ACCESS_KEY_ID
-    AWS_SECRET_ACCESS_KEY = config.AWS_SECRET_ACCESS_KEY
-    AWS_STORAGE_BUCKET_NAME = config.AWS_STORAGE_BUCKET_NAME
-    AWS_QUERYSTRING_AUTH = False
-    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
-    AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
-    # s3 static settings
-    STATICFILES_STORAGE = 'custom_storages.StaticStorage'
-else:
-    STATIC_URL = '/static/'
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# Default primary key field type
+# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+
+# USER ACC ALL-AUTH STUFF
+AUTH_USER_MODEL = 'accounts.CustomUser'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+AUTHENTICATION_BACKENDS = (
+    # Needed to login by username in Django admin, regardless of `allauth`
+    "django.contrib.auth.backends.ModelBackend",
+
+    # `allauth` specific authentication methods, such as login by e-mail
+    "allauth.account.auth_backends.AuthenticationBackend",
+)
+SITE_ID = 1
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = True
+ACCOUNT_SESSION_REMEMBER = True
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_UNIQUE_EMAIL = True
+LOGIN_REDIRECT_URL = 'index'
+ACCOUNT_LOGOUT_REDIRECT_URL = 'index'
+
+
+# STATIC/STORAGE
+STATIC_URL = '/static/'
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # is this necessary?
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
-
-
 DEFAULT_FILE_STORAGE = 'custom_storages.MediaStorage'
-
 AWS_ACCESS_KEY_ID = config.AWS_ACCESS_KEY_ID
 AWS_SECRET_ACCESS_KEY = config.AWS_SECRET_ACCESS_KEY
 AWS_STORAGE_BUCKET_NAME = config.AWS_STORAGE_BUCKET_NAME
 AWS_QUERYSTRING_AUTH = False
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
 
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+if config.DEV:
+    DEBUG = True
+    ALLOWED_HOSTS = ['127.0.0.1']
+    
+else:
+    DEBUG = False
+    ALLOWED_HOSTS = ['68.183.52.128', 'nitwitch.com', 'www.nitwitch.com']
+    STATICFILES_STORAGE = 'custom_storages.StaticStorage' # this is a subclass of S3Boto3Storage and will route static files to the AWS static bucket
+    

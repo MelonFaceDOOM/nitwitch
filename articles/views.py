@@ -8,13 +8,10 @@ from django.forms import modelformset_factory
 
 
 class IndexView(generic.ListView):
-    template_name = "articles/index.html"
     context_object_name = "latest_articles_list"
-
-    def get_queryset(self):
-        """Return last 5 published articles"""
-        return Article.objects.order_by('-pub_date')[:5]
-        #return Article.objects.get(pk=35)
+    template_name = "articles/index.html"
+    paginate_by = 5
+    model = Article
 
 
 def article(request, title):

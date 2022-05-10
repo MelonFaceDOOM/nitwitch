@@ -18,9 +18,11 @@ from django.urls import include, path
 from nitwitch import views
 
 urlpatterns = [
-    path('', views.index, name='index'),
-    # path('articles/', include('articles.urls')),
-    # path('polls/', include('polls.urls')),
-    # path('scheduling/', include('scheduling.urls')),
-    # path('admin/', admin.site.urls),
+    # path('', views.index, name='index'),
+    path('', views.IndexView.as_view(), name='index'),
+    path('articles/', include('articles.urls')),
+    path('polls/', include('polls.urls')),
+    path('scheduling/', include('scheduling.urls')),
+    path('admin/', admin.site.urls),
+    path('accounts/', include('allauth.urls')),
 ]
