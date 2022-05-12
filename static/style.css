@@ -20,6 +20,18 @@ h1 {
   font-size: 3rem;
 }
 
+a:link {
+  color: #FF4365;
+}
+
+a:visited {
+  color: #AB4E68;
+}
+
+a:hover {
+  color: #B61D49;
+}
+
 .container {
     display: grid;
     /*margin: 0px 100px;*/
@@ -167,6 +179,7 @@ img {
 
 .box-header {
   font-family: Poppins-Regular;
+  font-size: 1.5rem;
   padding: 0.2rem;
 }
 
@@ -178,8 +191,20 @@ img {
 
 }
 
-.box-subtext {
+.box-admin-controls {
   text-align: right;
+}
+
+.box-admin-controls a:link  {
+  color: #FF4365;
+}
+
+.box-admin-controls a:visited  {
+  color: #FF4365;
+}
+
+.box-admin-controls a:hover {
+  color: #B61D49;
 }
 
 /* markup css */

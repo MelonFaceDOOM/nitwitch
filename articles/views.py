@@ -11,7 +11,9 @@ class IndexView(generic.ListView):
     context_object_name = "latest_articles_list"
     template_name = "articles/index.html"
     paginate_by = 5
-    model = Article
+
+    def get_queryset(self):
+        return Article.objects.order_by('-pub_date')
 
 
 def article(request, title):

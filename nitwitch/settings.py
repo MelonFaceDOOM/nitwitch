@@ -29,7 +29,7 @@ INSTALLED_APPS = [
     'polls.apps.PollsConfig',
     'articles.apps.ArticlesConfig',
     'scheduling.apps.SchedulingConfig',
-    'django.contrib.admin',
+    # 'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
