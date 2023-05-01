@@ -7,7 +7,7 @@
         <meta charset="UTF-8">
         <title>Nitwitch</title>
     </head>
-    <body>
+    <body class="bg-color">
         <div class="container">
             <!--        Header -->
             <div class="small-margin"></div>
@@ -16,17 +16,23 @@
 <!--                site links </a>-->
             </div>
             <div class="header">
-                <a href="{% url 'index' %}">
-                    <div class="header-logo">
-                          <div class="diagonal-container to-right"></div>
-                          <div class="diagonal-container to-left"></div>
-                          <div class="diagonal-container to-right"></div>
-                          <div class="diagonal-container to-left"></div>
-                          <div class="diagonal-container to-right"></div>
-                          <div class="diagonal-container to-left"></div>
-                          <div class="diagonal-container to-right"></div>
-                    </div>
-                </a>
+                <div class="header-logo">
+                    <a href="{% url 'index' %}">
+                        <div class="header-segments">
+                              <div class="diagonal-container to-right"></div>
+                              <div class="diagonal-container to-left"></div>
+                              <div class="diagonal-container to-right"></div>
+                              <div class="diagonal-container to-left"></div>
+                              <div class="diagonal-container to-right"></div>
+                              <div class="diagonal-container to-left"></div>
+                              <div class="diagonal-container to-right"></div>
+                        </div>
+                    </a>
+                </div>
+                <div class = "header-spacer"></div>
+                <div class="css-toggle">
+                    <button type="button" class="css-toggle-button" id="css-toggle-button" onclick="toggleDarkMode()"></button>
+                </div>
             </div>
             <div class="header right-header"></div>
             <div class="big-margin"></div>
@@ -36,18 +42,18 @@
             <div class="mooncolumn">
                 <div class="moonbox">
                     <div class="moon moonlight"></div>
-                    <div class="moon moonshadow first-quarter"></div>
+                    <div class="moon moonshadow bg-color first-quarter"></div>
                 </div>
                 <div class="moonbox">
                     <div class="moon moonlight"></div>
-                    <div class="moon moonshadow waxing-crescent"></div>
+                    <div class="moon moonshadow bg-color waxing-crescent"></div>
                 </div>
                 <div class="moonbox">
-                    <div class="moon moonshadow"></div>
+                    <div class="moon moonshadow bg-color"></div>
                 </div>
                 <div class="moonbox">
                     <div class="moon moonlight"></div>
-                    <div class="moon moonshadow waning-crescent"></div>
+                    <div class="moon moonshadow bg-color waning-crescent"></div>
                 </div>
             </div>
             <div class="big-margin"></div>
@@ -58,19 +64,19 @@
             <div class="mooncolumn">
                 <div class="moonbox">
                     <div class="moon moonlight"></div>
-                    <div class="moon moonshadow third-quarter"></div>
+                    <div class="moon moonshadow bg-color third-quarter"></div>
                 </div>
                 <div class="moonbox">
                     <div class="moon moonlight"></div>
-                    <div class="moon moonshadow third-quarter"></div>
-                    <div class="moon moonlight waning-gibbous"></div>
+                    <div class="moon moonshadow bg-color third-quarter"></div>
+                    <div class="moon moonlight bg-color waning-gibbous"></div>
                 </div>
                 <div class="moonbox">
                     <div class="moon moonlight"></div>
                 </div>
                 <div class="moonbox">
                     <div class="moon moonlight"></div>
-                    <div class="moon moonshadow first-quarter"></div>
+                    <div class="moon moonshadow bg-color first-quarter"></div>
                     <div class="moon moonlight waxing-gibbous"></div>
                 </div>
             </div>
@@ -79,4 +85,5 @@
     </body>
 </html>
 
+<script type="text/javascript" src="{% static 'js/css_toggle.js' %}"></script>
 {% block scripts %} {% endblock %}

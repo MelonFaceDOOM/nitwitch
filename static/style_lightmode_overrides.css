@@ -1,0 +1,36 @@
+:root {
+  --main-background: #211626;
+  --moonlight: #F4DD96;
+  --green: #4C8B68;
+  --grey: #b0b0b0;
+}
+
+body {
+    background: var(--main-background);
+    color: var(--grey);
+    font-size: 1.25rem;
+}
+
+a:link {
+  color: #FF4365;
+}
+
+a:visited {
+  color: #AB4E68;
+}
+
+a:hover {
+  color: #B61D49;
+}
+
+.box-admin-controls a:link  {
+  color: #FF4365;
+}
+
+.box-admin-controls a:visited  {
+  color: #FF4365;
+}
+
+.box-admin-controls a:hover {
+  color: #B61D49;
+}
