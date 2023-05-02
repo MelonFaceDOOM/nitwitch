@@ -1,10 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>{{ article.title }}</h1>
-    <p> {{ article.author }} </p>
-    <p> {{ article.pub_date }} </p>
-    {{ article.article_text_formatted |safe }}
+    <section class="article-content">
+        <h1>{{ article.title }}</h1>
+        <p> {{ article.author }} </p>
+        <p> {{ article.pub_date }} </p>
+        {{ article.article_text_formatted |safe }}
+    </section>
 {% endblock %}
 
 

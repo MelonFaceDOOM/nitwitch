@@ -126,9 +126,14 @@ div.diagonal-container {
 
 .content {
   grid-column: 4/7;
-  max-width: 775px;
+  width: 100%;
   text-align: center;
   overflow-wrap: break-word;
+}
+
+.article-content {
+    max-width: 775px;
+    margin: 0 auto;
 }
 /**********************************************************/
 
