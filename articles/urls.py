@@ -11,6 +11,8 @@ urlpatterns = [
     path('edit_article/<int:article_id>', views.edit_article, name='edit_article'),
     path('submit_images/<int:article_id>', views.submit_images, name='submit_images'),
     path('delete_article/<int:article_id>', views.delete_article, name='delete_article'),
+    path('submit_article_comment/<int:article_id>', views.submit_article_comment, name='submit_article_comment'),
+    path('article_comment_ambiguity_vote/', views.article_comment_ambiguity_vote, name='article_comment_ambiguity_vote'),
     path('<str:title>/', views.article, name='article'),  # this HAS TO come last, or the <str> tag will match to
                                                           # everything else (i.e. 'write_article')
-]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

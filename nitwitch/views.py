@@ -1,8 +1,8 @@
+from itertools import chain
+from operator import attrgetter
 from django.views import generic
-from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse
 from articles.models import Article
-# Create your views here.
+from photoalbums.models import PhotoAlbum
 
 
 # def index(request):
@@ -15,9 +15,18 @@ from articles.models import Article
     
 
 class IndexView(generic.ListView):
-    context_object_name = "latest_articles_list"
-    template_name = "articles/index.html"
-    paginate_by = 5
+    context_object_name = "recent_publications"
+    template_name = "index.html"
 
     def get_queryset(self):
-        return Article.objects.order_by('-pub_date')
+        articles = Article.objects.all()
+        photoalbums = PhotoAlbum.objects.all()
+        combined_list = list(chain(articles, photoalbums))
+        combined_list.sort(key=attrgetter('pub_date'), reverse=True)
+        recent_publications = combined_list[:10]
+        return recent_publications
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['background_grid_class'] = 'background-grid'
+        return context

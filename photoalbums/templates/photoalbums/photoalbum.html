@@ -1,0 +1,103 @@
+{% extends "base_grid.html" %}
+{% load static %}
+
+{% block content %}
+<section class="content-info" id="album">
+    <h1 class="content-page-title"> {{ photoalbum_meta.title }}</h1>
+    <div class="author-and-date-line">
+        <p class="content-page-author"> {{ photoalbum_meta.author }} </p>
+        <p class="content-page-date"> {{ photoalbum_meta.pub_date }} </p>
+    </div>
+</section>
+<div class="photoalbum-display-grid">
+    {% for image in images %}
+    <div class="photoalbum-image-and-vote-container">
+        <div class="photoalbum-image-container">
+            <a class="photoalbum-thumbnail-image" href="{% url 'photoalbums:image' image.id %}#image-title">
+                <img src="{{ image.thumbnail.url }}" alt="{{ image.description }}">
+            </a>
+        </div>
+        <div class="photoalbum-vote">
+            <button class="vote-increase vote-button{% if image.vote_type == 'increase' %} increase-clicked{% endif %}" data-ambiguity-object-id="{{ image.id }}" title="increase ambiguity" data-ambiguity-vote-url="{% url 'photoalbums:ambiguity_vote' %}">☋</button>
+            <span class="ambiguity"> {{ image.ambiguity }}</span>
+            <button class="vote-decrease vote-button{% if image.vote_type == 'decrease' %} decrease-clicked{% endif %}" data-ambiguity-object-id="{{ image.id }}" title="decrease ambiguity" data-ambiguity-vote-url="{% url 'photoalbums:ambiguity_vote' %}">☊</button>
+        </div>
+    </div>
+    {% endfor %}
+
+    <div class="photoalbum-images-pagination">
+        <span class="step-links">
+            {% if images.has_previous %}
+                <a href="{% url 'photoalbums:photoalbum' photoalbum_meta.title 1 %}#album">&laquo; first</a>
+                <a href="{% url 'photoalbums:photoalbum' photoalbum_meta.title images.previous_page_number %}#album">previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ images.number }} of {{ images.paginator.num_pages }}.
+            </span>
+
+            {% if images.has_next %}
+                <a href="{% url 'photoalbums:photoalbum' photoalbum_meta.title images.next_page_number %}#album">next</a>
+                <a href="{% url 'photoalbums:photoalbum' photoalbum_meta.title images.paginator.num_pages %}#album">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+</div>
+
+<section class="bottom-page-comments" id="comments">
+    <h1 class="bottom-page-comments-title">Peanut Gallery</h1>
+    <div class="submit-comment-container">
+        <form action="{% url 'photoalbums:submit_photoalbum_comment' photoalbum_meta.id %}" method="POST">
+            {% csrf_token %}
+            <fieldset class="submit-comment-field">
+                {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+                <label class="submit-a-comment-label" for="photoalbum-comment-text">Submit a comment:</label><br>
+                <textarea class="comment-text-input" name="photoalbum_comment_text" id="photoalbum-comment-text"></textarea><br><br>
+            </fieldset>
+            <input class="submit-comment-button" type="submit" value="Submit">
+        </form>
+    </div>
+    {% if comments %}
+    {% for comment in comments %}
+    <div class="comment-container" id="comment-{{comment.id}}">
+        <div class="comment-date">
+            <a href="{% url 'photoalbums:photoalbum' photoalbum_meta.title %}?comment-id={{comment.id}}#comment-{{comment.id}}"> {{ comment.date_entered }} </a>
+        </div>
+        <div id="comment-{{ comment.id }}" class="comment-text">
+            {{ comment.comment_text }}
+        </div>
+        <div class="comment-vote">
+            <div class="comment-vote-button">
+                <button class="vote-increase vote-button{% if comment.vote_type == 'increase' %} increase-clicked{% endif %}" data-ambiguity-object-id="{{ comment.id }}" title="increase ambiguity" data-ambiguity-vote-url="{% url 'photoalbums:photoalbum_comment_ambiguity_vote' %}">☋</button>
+            </div>
+            <div class="ambiguity-container">  Ambiguity:<span class="ambiguity">{{ comment.ambiguity }}</span></div>
+            <div class="comment-vote-button">
+                <button class="vote-decrease vote-button{% if comment.vote_type  == 'decrease' %} decrease-clicked{% endif %}" data-ambiguity-object-id="{{ comment.id }}" title="decrease ambiguity" data-ambiguity-vote-url="{% url 'photoalbums:photoalbum_comment_ambiguity_vote' %}">☊</button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    <div class="comments-pagination">
+        <span class="step-links">
+            {% if comments.has_previous %}
+                <a href="?comment-page=1#comments">&laquo; first</a>
+                <a href="?comment-page={{ comments.previous_page_number }}#comments">previous</a>
+            {% endif %}
+
+            <span class="current">
+                Comment page {{ comments.number }} of {{ comments.paginator.num_pages }}.
+            </span>
+
+            {% if comments.has_next %}
+                <a href="?comment-page={{ comments.next_page_number }}#comments">next</a>
+                <a href="?comment-page={{ comments.paginator.num_pages }}#comments">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}
+    <script type="text/javascript" src="{% static 'js/ambiguity_vote.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "base_grid.html" %}
+
+{% block content %}
+<div class="photoalbum-page-content">
+{% if latest_photoalbums_list %}
+    <div class="photoalbum-list">
+        {% for photoalbum in latest_photoalbums_list %}
+        <div class="infobox photoalbum-infobox">
+            <div class="infobox-title photoalbum-infobox-title">
+                <a href="{% url 'photoalbums:photoalbum' photoalbum.title %}#album">{{ photoalbum.title }}</a>
+            </div>
+            <div class="photoalbum-infobox-date infobox-date">
+                {{ photoalbum.pub_date |date:"M d, Y" }}
+            </div>
+            <a class="photoalbum-infobox-thumbnail" href="{% url 'photoalbums:photoalbum' photoalbum.title %}">
+                {% if photoalbum.images %}
+                {% with image=photoalbum.images.all|dictsort:"ambiguity"|last %}
+                    <img class="photoalbum-thumbnail-image" src="{{ image.thumbnail.url }}">
+                {% endwith %}
+                {% endif %}
+            </a>
+            <div class="photoalbum-infobox-description">
+                {% if photoalbum.description %}
+                {{ photoalbum.description }}
+                {% endif %}
+            </div>
+            <div class="photoalbum-infobox-admin-controls infobox-admin-controls">
+                {% if perms.photoalbums.delete_photoalbum %}
+                    <a href = "{% url 'photoalbums:delete_photoalbum' photoalbum.id %}">Delete</a>
+                {% endif %}
+                {% if perms.photoalbums.change_photoalbum %}
+                    <a href = "{% url 'photoalbums:edit_photoalbum' photoalbum.id %}">Edit</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+<div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+{% else %}
+<p>No photo albums are available.</p>
+{% endif %}
+
+{% if perms.photoalbums.add_photoalbum %}
+<div class="create-content-button">
+    <p>
+        <a href="{% url 'photoalbums:create_photoalbum' %}">Create a photo album.</a>
+    </p>
+</div>
+{% endif %}
+</div>
+
+{% endblock %}
+

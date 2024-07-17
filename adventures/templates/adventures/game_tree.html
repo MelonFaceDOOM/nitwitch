@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<section class="content-info" id="article">
+
+    <div class="game-tree-container">
+        <h1 id="adventure-title" class="title-cairn-top" data-title="{{ adventure.title }}">{{ adventure.display_name }}</h1>
+        <div class="cairn-bottom">
+            <div id="canvasContainer" class="canvas-cairn-bottom-left">
+                <canvas id="myCanvas"></canvas>
+            </div>
+            <div id="info-panel" class="info-cairn-bottom-right">
+                <div id="selected-rect-id">
+
+                </div>
+                <div id="selected-rect-text">
+
+                </div>
+                <div id="selected-rect-options"></div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+{% block scripts %}
+    <script type="text/javascript" src="{% static 'js/tree_recursive_width.js' %}"></script>
+{% endblock %}

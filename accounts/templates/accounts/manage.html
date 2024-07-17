@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage</title>
+</head>
+<body>
+    <h1>Manage Comments and Votes</h1>
+
+    <h2>Comments</h2>
+    <table>
+        <tr>
+            <th>IP Address</th>
+            <th>Comment Text</th>
+            <th>Action</th>
+        </tr>
+        {% for comment in comments %}
+        <tr id="row-comment-{{ comment.id }}">
+            <td>{{ comment.ip_address }}</td>
+            <td>{{ comment.comment_text }}</td>
+            <td>
+                <button onclick="deleteObject('{{ comment.get_comment_type }}', {{ comment.id }})">Delete</button>
+            </td>
+            <td>
+                <button onclick="banIP('{{ comment.ip_address }}')">Ban IP</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Votes</h2>
+    <table>
+        <tr>
+            <th>IP Address</th>
+            <th>Vote Type</th>
+            <th>Action</th>
+        </tr>
+        {% for vote in votes %}
+        <tr id="row-vote-{{ vote.id }}">
+            <td>{{ vote.ip_address }}</td>
+            <td>{{ vote.comment_text|default_if_none:vote.vote_type }}</td>
+            <td>{{ vote.id }}</td>
+            <td>
+                <button onclick="deleteObject('{{ vote.get_vote_type }}', {{ vote.id }})">Delete</button>
+            </td>
+            <td>
+                <button onclick="banIP('{{ vote.ip_address }}')">Ban IP</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <table>
+        <tr>
+            <th>IP Address</th>
+            <th>Action</th>
+        </tr>
+        {% for banned_ip in banned_ips %}
+        <tr id="row-vote-{{ banned_ip.id }}">
+            <td>{{ banned_ip.ip_address }}</td>
+            <td>
+                <button onclick="unBanIP('{{ banned_ip.ip_address }}')">Unban IP</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
+
+
+<script>
+function deleteObject(objectType, objectId) {
+    console.log(objectType);
+    fetch("{% url 'delete_object' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ object_type: objectType, object_id: objectId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alert('Object deleted successfully');
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+function banIP(ip_address) {
+    fetch("{% url 'ban_ip' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ ip_address: ip_address })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alert('IP address banned successfully');
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+function unBanIP(ip_address) {
+    fetch("{% url 'unban_ip' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ ip_address: ip_address })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            alert('IP address unbanned successfully');
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+</script>

@@ -2,6 +2,7 @@
 *__pycache__/
 .git/
 venv/
+media/
 nitwitch_scripts/
 config.py
 devprodtodo.txt

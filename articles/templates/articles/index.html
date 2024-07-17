@@ -1,54 +1,65 @@
-{% extends "base.html" %}
+{% extends "base_grid.html" %}
 
 {% block content %}
-{% if latest_articles_list %}
-<div class="article-list">
-    {% for article in latest_articles_list %}
-    <div class="infobox">
-        <div class="box-header">
-            <a href="{% url 'articles:article' article.title %}">{{ article.title }}</a>
+<div class="article-page-content">
+    {% if latest_articles_list %}
+    <div class="article-list">
+        {% for article in latest_articles_list %}
+        <div class="infobox article-infobox">
+            <div class="infobox-title article-infobox-title">
+                <a href="{% url 'articles:article' article.title %}#article">{{ article.title }}</a>
+            </div>
+            <div class="article-infobox-date infobox-date">
+                {{ article.pub_date |date:"M d, Y"}}
+            </div>
+            <div class="article-infobox-description">
+                {{ article.description }}
+            </div>
+            <div class="article-infobox-viewcount">
+                Views: {{ article.view_count }}
+            </div>
+            <div class="article-infobox-admin-controls infobox-admin-controls">
+                {% if perms.articles.delete_article %}
+                    <a href = "{% url 'articles:delete_article' article.id %}">Delete</a>
+                {% endif %}
+                {% if perms.articles.change_article %}
+                    <a href = "{% url 'articles:edit_article' article.id %}">Edit</a>
+                {% endif %}
+            </div>
         </div>
-        <div class="box-subheader">
-            {{ article.pub_date |date:"M d, Y"}}
-        </div>
-        <div class="box-text">
-        </div>
-        <div class="box-admin-controls">
-            {% if perms.articles.delete_article %}
-                <a href = "{% url 'articles:delete_article' article.id %}">Delete</a>
-            {% endif %}
-            {% if perms.articles.change_article %}
-                <a href = "{% url 'articles:edit_article' article.id %}">Edit</a>
-            {% endif %}
-        </div>
+        {% endfor %}
     </div>
-    {% endfor %}
-</div>
-<div class="pagination">
-    <span class="step-links">
-        {% if page_obj.has_previous %}
-            <a href="?page=1">&laquo; first</a>
-            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
-        {% endif %}
+    <div class="pagination">
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+            {% endif %}
 
-        <span class="current">
-            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+            <span class="current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+            </span>
+
+            {% if page_obj.has_next %}
+
+                <a href="?page={{ page_obj.next_page_number }}">next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
         </span>
-
-        {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}">next</a>
-            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
-        {% endif %}
-    </span>
+    </div>
+    {% else %}
+    <p>No articles are available.</p>
+    {% endif %}
+    {% if perms.articles.add_article %}
+    <div class="create-content-button">
+    <p>
+        <a href="{% url 'articles:create_article' %}">Write an article.</a>
+    </p>
+    </div>
+    {% endif %}
 </div>
-{% else %}
-<p>No articles are available.</p>
-{% endif %}
-{% if perms.articles.add_article %}
-<p>
-    <a href="{% url 'articles:create_article' %}">Write an article.</a>
-</p>
-{% endif %}
+
+
 
 
 {% endblock %}

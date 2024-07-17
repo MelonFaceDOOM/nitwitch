@@ -1,89 +1,87 @@
-{% load static %}
-
-<link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
     <head>
         <meta charset="UTF-8">
         <title>Nitwitch</title>
+        <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+        <link rel="apple-touch-icon" sizes="180x180" href="{% static 'apple-touch-icon.png' %}">
+        <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon-32x32.png' %}">
+        <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon-16x16.png' %}">
+        <link rel="manifest" href="{% static 'site.webmanifest' %}">
+        <script type="text/javascript" src="{% static 'js/css_toggle.js' %}"></script>
+        {% block scripts %} {% endblock %}
     </head>
     <body class="bg-color">
         <div class="container">
-            <!--        Header -->
-            <div class="small-margin"></div>
-            <div class="big-margin"></div>
-            <div class="header left-header">
-<!--                site links </a>-->
+            <div class="background-no-grid">
+                <div class="gridbox">
+                    <div class="css-toggle">
+                        <button type="button" class="css-toggle-button" id="css-toggle-button" onclick="toggleDarkMode()"></button>
+                    </div>
+                    <div class="header-title">
+                        <a href="{% url 'index' %}">
+                            Nitwitch
+                        </a>
+                    </div>
+                    <div class="header-banner">
+                        <a href="{% url 'index' %}">
+                            <div class="header-segments">
+                                  <div class="diagonal-container to-right"></div>
+                                  <div class="diagonal-container to-left"></div>
+                                  <div class="diagonal-container to-right"></div>
+                                  <div class="diagonal-container to-left"></div>
+                                  <div class="diagonal-container to-right"></div>
+                                  <div class="diagonal-container to-left"></div>
+                                  <div class="diagonal-container to-right"></div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="site-links site-links1 grid-fit-text">
+                        <a href="{% url 'articles:index' %}">writing</a>
+                    </div>
+                    <div class="site-links site-links2 grid-fit-text">
+                        <a href="{% url 'photoalbums:index' %}">pics</a>
+                    </div>
+                    <div class="site-links site-links3 grid-fit-text">
+                        <a href="{% url 'adventures:index' %}">adventure</a>
+                    </div>
+
+                    <div class="moonbox moon1">
+                        <div class="moon moonlight"></div>
+                        <div class="moon moonshadow bg-color first-quarter"></div>
+                    </div>
+                    <div class="moonbox moon2">
+                        <div class="moon moonlight"></div>
+                        <div class="moon moonshadow bg-color waxing-crescent"></div>
+                    </div>
+                    <div class="moonbox moon3">
+                        <div class="moon moonshadow bg-color"></div>
+                    </div>
+                    <div class="moonbox moon4">
+                        <div class="moon moonlight"></div>
+                        <div class="moon moonshadow bg-color waning-crescent"></div>
+                    </div>
+                    <div class="moonbox moon5">
+                        <div class="moon moonlight"></div>
+                        <div class="moon moonshadow bg-color third-quarter"></div>
+                    </div>
+                    <div class="moonbox moon6">
+                        <div class="moon moonlight"></div>
+                        <div class="moon moonshadow bg-color third-quarter"></div>
+                        <div class="moon moonlight bg-color waning-gibbous"></div>
+                    </div>
+                    <div class="moonbox moon7">
+                        <div class="moon moonlight"></div>
+                    </div>
+                    <div class="moonbox moon8">
+                        <div class="moon moonlight"></div>
+                        <div class="moon moonshadow bg-color first-quarter"></div>
+                        <div class="moon moonlight waxing-gibbous"></div>
+                    </div>
+                    {% block content %} {% endblock %}
+                 </div>
             </div>
-            <div class="header">
-                <div class="header-logo">
-                    <a href="{% url 'index' %}">
-                        <div class="header-segments">
-                              <div class="diagonal-container to-right"></div>
-                              <div class="diagonal-container to-left"></div>
-                              <div class="diagonal-container to-right"></div>
-                              <div class="diagonal-container to-left"></div>
-                              <div class="diagonal-container to-right"></div>
-                              <div class="diagonal-container to-left"></div>
-                              <div class="diagonal-container to-right"></div>
-                        </div>
-                    </a>
-                </div>
-                <div class = "header-spacer"></div>
-                <div class="css-toggle">
-                    <button type="button" class="css-toggle-button" id="css-toggle-button" onclick="toggleDarkMode()"></button>
-                </div>
-            </div>
-            <div class="header right-header"></div>
-            <div class="big-margin"></div>
-            <div class="small-margin"></div>
-            <!--        2nd row -->
-            <div class="small-margin"></div>
-            <div class="mooncolumn">
-                <div class="moonbox">
-                    <div class="moon moonlight"></div>
-                    <div class="moon moonshadow bg-color first-quarter"></div>
-                </div>
-                <div class="moonbox">
-                    <div class="moon moonlight"></div>
-                    <div class="moon moonshadow bg-color waxing-crescent"></div>
-                </div>
-                <div class="moonbox">
-                    <div class="moon moonshadow bg-color"></div>
-                </div>
-                <div class="moonbox">
-                    <div class="moon moonlight"></div>
-                    <div class="moon moonshadow bg-color waning-crescent"></div>
-                </div>
-            </div>
-            <div class="big-margin"></div>
-            <div class="content">
-                {% block content %} {% endblock %}
-            </div>
-            <div class="big-margin"></div>
-            <div class="mooncolumn">
-                <div class="moonbox">
-                    <div class="moon moonlight"></div>
-                    <div class="moon moonshadow bg-color third-quarter"></div>
-                </div>
-                <div class="moonbox">
-                    <div class="moon moonlight"></div>
-                    <div class="moon moonshadow bg-color third-quarter"></div>
-                    <div class="moon moonlight bg-color waning-gibbous"></div>
-                </div>
-                <div class="moonbox">
-                    <div class="moon moonlight"></div>
-                </div>
-                <div class="moonbox">
-                    <div class="moon moonlight"></div>
-                    <div class="moon moonshadow bg-color first-quarter"></div>
-                    <div class="moon moonlight waxing-gibbous"></div>
-                </div>
-            </div>
-            <div class="small-margin"></div>
         </div>
     </body>
 </html>
-
-<script type="text/javascript" src="{% static 'js/css_toggle.js' %}"></script>
-{% block scripts %} {% endblock %}

@@ -86,7 +86,6 @@ tags = [
         "output_template": "<details><summary>Spoiler</summary>{value}</details>",
         "format_func": simple_replace
     },
-    
     {
         "name": "img",
         "start": "\[img\]",
@@ -94,7 +93,6 @@ tags = [
         "output_template": '<img src="{value}">',
         "format_func": simple_replace
     },
-    
     {
         "name": "yt",
         "start": "\[yt\]",
@@ -102,7 +100,6 @@ tags = [
         "output_template": "",
         "format_func": embed_youtube
     },
-
     {
         "name": "box",
         "start": "\[box\]",
@@ -110,12 +107,18 @@ tags = [
         "output_template": '<div class="box"> {value} </div>',
         "format_func": simple_replace
     },
-
     {
         "name": "header",
         "start": "\[header\]",
         "end": "[/header]",
         "output_template": '<div class="article-header"> {value} </div>',
+        "format_func": simple_replace
+    },
+    {
+        "name": "center",
+        "start": "\[center\]",
+        "end": "[/center]",
+        "output_template": '<div class="article-center"> {value} </div>',
         "format_func": simple_replace
     }
 ]

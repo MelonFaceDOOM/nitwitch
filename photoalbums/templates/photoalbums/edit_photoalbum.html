@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-form">
+    <form action="{% url 'photoalbums:edit_photoalbum' photoalbum.id %}" method="POST">
+        {% csrf_token %}
+        <fieldset>
+            <legend><h1>Submit a photoalbum.</h1></legend>
+            {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+            <label for="author">author:</label><br>
+            <input class="photoalbum-field input-left-justified" type="text" name="author" id="author" value="{{ photoalbum.author }}"><br><br>
+            <label for="title">title:</label><br>
+            <input class="photoalbum-field input-left-justified" type="text" name="title" id="title" value="{{ photoalbum.title }}"><br><br>
+            <label for="description">photoalbum description:</label><br>
+            <textarea class="description" name="description" id="description">{{ photoalbum.description }}</textarea><br><br>
+        </fieldset>
+        <input class="input-left-justified" type="submit" value="Submit">
+    </form>
+</div>
+
+<div class="content-form2">
+    <h1 class="submit-images-title">Photo Album Images</h1>
+    <hr>
+    {% if photoalbum.images %}
+    <ul>
+    {% for image in photoalbum.images.all %}
+        <li><a href="{{ image.image.url }}">{{image.image.url}}</a></li>
+    {% endfor %}
+    </ul>
+    {% endif %}
+    <form action="{% url 'photoalbums:submit_images' photoalbum.id %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="photoalbum-id" value="{{ photoalbum.id }}" />
+        <input class ="input-left-justified" type="file" id="images" name="images" multiple />
+        <input class="submit input-left-justified" type="submit" value="add" />
+    </form>
+</div>
+<div class="extra-content-so-I-can-scroll-more"></div>
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}

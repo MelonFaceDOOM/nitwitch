@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 import os
 from pathlib import Path
 import config
+from django.core.files.storage import FileSystemStorage
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,8 +29,10 @@ SECRET_KEY = config.SECRET_KEY
 INSTALLED_APPS = [
     'polls.apps.PollsConfig',
     'articles.apps.ArticlesConfig',
+    'photoalbums.apps.PhotoalbumsConfig',
+    'adventures.apps.AdventuresConfig',
     'scheduling.apps.SchedulingConfig',
-    # 'django.contrib.admin',
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -58,7 +61,7 @@ ROOT_URLCONF = 'nitwitch.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates'),],
+        'DIRS': [os.path.join(BASE_DIR, 'templates'), ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -150,15 +153,17 @@ ACCOUNT_LOGOUT_REDIRECT_URL = 'index'
 
 # STATIC/STORAGE
 STATIC_URL = '/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # is this necessary?
-STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
-DEFAULT_FILE_STORAGE = 'custom_storages.MediaStorage'
-AWS_ACCESS_KEY_ID = config.AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY = config.AWS_SECRET_ACCESS_KEY
-AWS_STORAGE_BUCKET_NAME = config.AWS_STORAGE_BUCKET_NAME
-AWS_QUERYSTRING_AUTH = False
-AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
-AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
+MEDIA_URL = '/media/'
+STATICFILES_DIRS = (os.path.join(BASE_DIR, config.STATICFILES_LOCATION),)
+DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+MEDIA_ROOT = os.path.join(BASE_DIR, config.MEDIAFILES_LOCATION)
+# DEFAULT_FILE_STORAGE = 'custom_storages.MediaStorage'
+# AWS_ACCESS_KEY_ID = config.AWS_ACCESS_KEY_ID
+# AWS_SECRET_ACCESS_KEY = config.AWS_SECRET_ACCESS_KEY
+# AWS_STORAGE_BUCKET_NAME = config.AWS_STORAGE_BUCKET_NAME
+# AWS_QUERYSTRING_AUTH = False
+# AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+# AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
 
 if config.DEV:
     DEBUG = True
@@ -167,5 +172,6 @@ if config.DEV:
 else:
     DEBUG = False
     ALLOWED_HOSTS = ['68.183.52.128', 'nitwitch.com', 'www.nitwitch.com']
-    STATICFILES_STORAGE = 'custom_storages.StaticStorage' # this is a subclass of S3Boto3Storage and will route static files to the AWS static bucket
+    # STATICFILES_STORAGE = 'custom_storages.StaticStorage'
+    # this is a subclass of S3Boto3Storage and will route static files to the AWS static bucket
     

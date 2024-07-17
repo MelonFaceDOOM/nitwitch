@@ -1,0 +1,63 @@
+{% extends "base_grid.html" %}
+
+{% block content %}
+<div class="article-page-content">
+    {% if latest_adventures_list %}
+    <div class="article-list">
+        {% for adventure in latest_adventures_list %}
+        <div class="infobox article-infobox">
+            <div class="infobox-title article-infobox-title">
+                <a href="{% url 'adventures:adventure_game_card' adventure.title 0%}">{{ adventure.display_name }}</a>
+            </div>
+            <div class="article-infobox-date infobox-date">
+                {{ adventure.pub_date |date:"M d, Y"}}
+            </div>
+            <div class="article-infobox-description">
+                {{ adventure.description }}
+            </div>
+            <div class="article-infobox-viewcount">
+                <a href="{% url 'adventures:game_tree' adventure.title %}">view game tree</a>
+            </div>
+            <div class="article-infobox-admin-controls infobox-admin-controls">
+                {% if perms.adventures.delete_article %}
+                    <a href = "{% url 'adventures:delete_adventure' adventure.id %}">Delete</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="pagination">
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+            </span>
+
+            {% if page_obj.has_next %}
+
+                <a href="?page={{ page_obj.next_page_number }}">next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+    {% else %}
+    <p>No adventures are available.</p>
+    {% endif %}
+    {% if perms.adventures.add_adventure %}
+    <form action="{% url 'adventures:submit_adventures' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input class="input-left-justified" type="file" id="adventure_files" name="adventure_files" multiple />
+        <input class="submit input-left-justified" type="submit" value="add" />
+    </form>
+    {% endif %}
+</div>
+
+
+
+
+{% endblock %}
+

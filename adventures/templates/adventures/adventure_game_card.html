@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<section class="content-info" id="article">
+    <h1 class="content-page-title">
+        <a href="{% url 'adventures:adventure_game_card' game_card.adventure.title 0%}">
+            {{ game_card.adventure.title }}
+        </a>
+    </h1>
+    <div class="author-and-date-line">
+        <p class="content-page-author"> {{ game_card.adventure.author }} </p>
+        <p class="content-page-date"> {{ game_card.adventure.pub_date }} </p>
+    </div>
+</section>
+<section class="article-content">
+    {{ game_card.card_text }}
+</section>
+<section class="bottom-page-comments" id="comments">
+    <br>
+{% if game_card.card_options.all %}
+{% for option in game_card.card_options.all %}
+    <div class="comment-container" id="comment-{{comment.id}}">
+        <a href="{% url 'adventures:adventure_game_card' game_card.adventure.title option.linked_card_id %}">{{option.option_text}}</a>
+    </div>
+{% endfor %}
+{% else %}
+    <p>Game over</p>
+{% endif %}
+
+</section>
+{% endblock %}

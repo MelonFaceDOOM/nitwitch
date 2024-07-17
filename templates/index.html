@@ -1,5 +1,19 @@
-{% extends "base.html" %}
+{% extends "base_grid.html" %}
 
 {% block content %}
-  Lorem ipsum dolor sit amet, consectetur adipisicing elit. Cum dolore inventore officiis quibusdam sed? Adipisci aperiam atque consequuntur corporis dicta doloremque, expedita ipsam itaque nobis odio suscipit voluptas. Doloribus laboriosam laborum nisi quo reprehenderit? Et harum nemo recusandae sapiente unde.
+<div class="title-page-content">
+{% if recent_publications %}
+<div class="title-page-content-list">
+    {% for publication in recent_publications %}
+    <div class="title-page-content-item">
+        {% if publication.article_text %}
+        <a href="{% url 'articles:article' publication.title %}">{{ publication.title }}</a>
+        {% else %}
+        <a href="{% url 'photoalbums:photoalbum' publication.title %}">{{ publication.title }}</a>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+</div>
 {% endblock %}

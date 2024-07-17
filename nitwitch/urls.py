@@ -1,3 +1,6 @@
+from django.conf import settings
+from django.conf.urls.static import static
+
 """index URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
@@ -23,6 +26,9 @@ urlpatterns = [
     path('articles/', include('articles.urls')),
     path('polls/', include('polls.urls')),
     path('scheduling/', include('scheduling.urls')),
-    # path('admin/', admin.site.urls),
-    path('accounts/', include('allauth.urls')),
-]
+    path('admin/', admin.site.urls),
+    path('accounts/', include('allauth.urls')),  # this is the login/signup stuff
+    path('admin-controls/', include('accounts.urls')),  # this is "manage"
+    path('photoalbums/', include('photoalbums.urls')),
+    path('adventures/', include('adventures.urls')),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
