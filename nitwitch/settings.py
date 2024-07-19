@@ -32,7 +32,7 @@ INSTALLED_APPS = [
     'photoalbums.apps.PhotoalbumsConfig',
     'adventures.apps.AdventuresConfig',
     'scheduling.apps.SchedulingConfig',
-    'django.contrib.admin',
+    #'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -167,11 +167,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, config.MEDIAFILES_LOCATION)
 
 if config.DEV:
     DEBUG = True
-    ALLOWED_HOSTS = ['127.0.0.1']
+    ALLOWED_HOSTS = ['127.0.0.1', '192.168.2.32']
     
 else:
     DEBUG = False
-    ALLOWED_HOSTS = ['68.183.52.128', 'nitwitch.com', 'www.nitwitch.com']
+    ALLOWED_HOSTS = ['nitwitch.com', 'www.nitwitch.com']
     # STATICFILES_STORAGE = 'custom_storages.StaticStorage'
     # this is a subclass of S3Boto3Storage and will route static files to the AWS static bucket
     

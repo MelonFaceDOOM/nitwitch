@@ -1,6 +1,7 @@
 *.idea/
 *__pycache__/
 .git/
+certs/
 venv/
 media/
 nitwitch_scripts/

@@ -26,7 +26,7 @@ urlpatterns = [
     path('articles/', include('articles.urls')),
     path('polls/', include('polls.urls')),
     path('scheduling/', include('scheduling.urls')),
-    path('admin/', admin.site.urls),
+    #path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),  # this is the login/signup stuff
     path('admin-controls/', include('accounts.urls')),  # this is "manage"
     path('photoalbums/', include('photoalbums.urls')),
