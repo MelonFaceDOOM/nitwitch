@@ -33,7 +33,7 @@ INSTALLED_APPS = [
     'adventures.apps.AdventuresConfig',
     'movienights.apps.MovienightsConfig',
     'scheduling.apps.SchedulingConfig',
-    'django.contrib.admin',
+    #'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -177,7 +177,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, config.MEDIAFILES_LOCATION)
 
 if config.DEV:
     DEBUG = True
-    ALLOWED_HOSTS = ['127.0.0.1']
+    ALLOWED_HOSTS = ['127.0.0.1', '192.168.2.32']
 
     # Dev: no email step. Signup immediately creates a full admin account
     # (see accounts/signals.py). Any mail (e.g. password reset) prints to console.
@@ -186,7 +186,7 @@ if config.DEV:
 
 else:
     DEBUG = False
-    ALLOWED_HOSTS = ['68.183.52.128', 'nitwitch.com', 'www.nitwitch.com']
+    ALLOWED_HOSTS = ['nitwitch.com', 'www.nitwitch.com']
     # STATICFILES_STORAGE = 'custom_storages.StaticStorage'
     # this is a subclass of S3Boto3Storage and will route static files to the AWS static bucket
 
@@ -205,4 +205,3 @@ else:
 DISCORD_CLIENT_ID = config.DISCORD_CLIENT_ID
 DISCORD_CLIENT_SECRET = config.DISCORD_CLIENT_SECRET
 DISCORD_OAUTH_REDIRECT_URI = config.DISCORD_OAUTH_REDIRECT_URI
-    
