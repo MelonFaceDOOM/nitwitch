@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'articles.apps.ArticlesConfig',
     'photoalbums.apps.PhotoalbumsConfig',
     'adventures.apps.AdventuresConfig',
+    'movienights.apps.MovienightsConfig',
     'scheduling.apps.SchedulingConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -88,8 +89,18 @@ DATABASES = {
         'PASSWORD': config.DB_PASSWORD,
         'HOST': config.DB_HOST,
         'PORT': config.DB_PORT,
-    }
+    },
+    'movienight': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config.MOVIENIGHT_DB_NAME,
+        'USER': config.MOVIENIGHT_DB_USER,
+        'PASSWORD': config.MOVIENIGHT_DB_PASSWORD,
+        'HOST': config.DB_HOST,
+        'PORT': config.DB_PORT,
+    },
 }
+
+DATABASE_ROUTERS = ['movienights.db_router.MovienightRouter']
 
 
 # Password validation
@@ -132,7 +143,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # USER ACC ALL-AUTH STUFF
 AUTH_USER_MODEL = 'accounts.CustomUser'
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 AUTHENTICATION_BACKENDS = (
     # Needed to login by username in Django admin, regardless of `allauth`
     "django.contrib.auth.backends.ModelBackend",
@@ -168,10 +178,31 @@ MEDIA_ROOT = os.path.join(BASE_DIR, config.MEDIAFILES_LOCATION)
 if config.DEV:
     DEBUG = True
     ALLOWED_HOSTS = ['127.0.0.1']
-    
+
+    # Dev: no email step. Signup immediately creates a full admin account
+    # (see accounts/signals.py). Any mail (e.g. password reset) prints to console.
+    ACCOUNT_EMAIL_VERIFICATION = 'none'
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 else:
     DEBUG = False
     ALLOWED_HOSTS = ['68.183.52.128', 'nitwitch.com', 'www.nitwitch.com']
     # STATICFILES_STORAGE = 'custom_storages.StaticStorage'
     # this is a subclass of S3Boto3Storage and will route static files to the AWS static bucket
+
+    # Prod: users must click the link in a confirmation email before they can log
+    # in. New accounts are non-admin; an existing admin promotes them later.
+    ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = config.EMAIL_HOST
+    EMAIL_PORT = config.EMAIL_PORT
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = config.EMAIL_HOST_USER
+    EMAIL_HOST_PASSWORD = config.EMAIL_HOST_PASSWORD
+    DEFAULT_FROM_EMAIL = config.DEFAULT_FROM_EMAIL
+
+# Discord OAuth (Movienights viewer verification only)
+DISCORD_CLIENT_ID = config.DISCORD_CLIENT_ID
+DISCORD_CLIENT_SECRET = config.DISCORD_CLIENT_SECRET
+DISCORD_OAUTH_REDIRECT_URI = config.DISCORD_OAUTH_REDIRECT_URI
     

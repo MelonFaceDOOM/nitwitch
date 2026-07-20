@@ -1,0 +1,118 @@
+{% extends "movienights/base_mn.html" %}
+
+{% block mn_body %}
+<section class="mn-panel mn-panel--flush">
+  <div class="mn-topbar">
+    <p class="mn-crumb">
+      <a href="{% url 'movienights:index' %}">Guilds</a>
+      / <a href="{% url 'movienights:guild_hub' guild.id %}">{{ guild.display_name }}</a>
+      / {{ view_label }}
+    </p>
+    {% if viewer %}
+    <div class="mn-topbar-user">
+      <span>{{ viewer.display_name }}</span>
+      <form method="post" action="{% url 'movienights:clear_viewer' %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{% url 'movienights:index' %}">
+        <button type="submit" class="mn-link-btn">Log out</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="mn-toolbar mn-pad">
+    <form class="mn-toolbar-row" method="get" action="{% url 'movienights:movie_list' guild.id %}">
+      <input type="hidden" name="view" value="{{ view }}">
+      <input type="hidden" name="sort" value="{{ sort }}">
+      <input type="hidden" name="dir" value="{{ dir }}">
+      {% if mine %}<input type="hidden" name="mine" value="{{ mine }}">{% endif %}
+      <label for="movie-q">Search</label>
+      <input class="mn-input" type="search" id="movie-q" name="q" value="{{ q }}" placeholder="Title contains…">
+      <button type="submit" class="mn-btn">Search</button>
+    </form>
+    <div class="mn-toolbar-row mn-filters mn-filter-tri">
+      <span class="mn-filter-label">{% if view == 'top' %}rated by me{% else %}endorsed by me{% endif %}</span>
+      <a href="?view={{ view }}&q={{ q }}&sort={{ sort }}&dir={{ dir }}"{% if not mine %} class="is-active"{% endif %}>any</a>
+      <a href="?view={{ view }}&q={{ q }}&sort={{ sort }}&dir={{ dir }}&mine=yes"{% if mine == 'yes' %} class="is-active"{% endif %}>yes</a>
+      <a href="?view={{ view }}&q={{ q }}&sort={{ sort }}&dir={{ dir }}&mine=no"{% if mine == 'no' %} class="is-active"{% endif %}>no</a>
+    </div>
+    <p class="mn-count">{{ page_obj.paginator.count }} movie{{ page_obj.paginator.count|pluralize }}</p>
+  </div>
+
+  {% if movies %}
+  <div class="mn-table-wrap">
+    <table class="mn-table">
+      <thead>
+        <tr>
+          <th class="mn-col-title">Title</th>
+          <th class="mn-col-user">Submitter</th>
+          {% if view == 'top' %}
+          <th class="mn-col-num">
+            <a href="?view={{ view }}&q={{ q }}&sort=rating&dir={{ next_dirs.rating }}{% if mine %}&mine={{ mine }}{% endif %}">
+              Avg{% if sort == 'rating' %}{% if dir == 'desc' %} ↓{% else %} ↑{% endif %}{% endif %}
+            </a>
+          </th>
+          <th class="mn-col-num">
+            <a href="?view={{ view }}&q={{ q }}&sort=count&dir={{ next_dirs.count }}{% if mine %}&mine={{ mine }}{% endif %}">
+              #{% if sort == 'count' %}{% if dir == 'desc' %} ↓{% else %} ↑{% endif %}{% endif %}
+            </a>
+          </th>
+          <th class="mn-col-date">
+            <a href="?view={{ view }}&q={{ q }}&sort=date&dir={{ next_dirs.date }}{% if mine %}&mine={{ mine }}{% endif %}">
+              Watched{% if sort == 'date' %}{% if dir == 'desc' %} ↓{% else %} ↑{% endif %}{% endif %}
+            </a>
+          </th>
+          {% else %}
+          <th class="mn-col-num">
+            <a href="?view={{ view }}&q={{ q }}&sort=endorsements&dir={{ next_dirs.endorsements }}{% if mine %}&mine={{ mine }}{% endif %}">
+              Endorsements{% if sort == 'endorsements' %}{% if dir == 'desc' %} ↓{% else %} ↑{% endif %}{% endif %}
+            </a>
+          </th>
+          <th class="mn-col-date">
+            <a href="?view={{ view }}&q={{ q }}&sort=date&dir={{ next_dirs.date }}{% if mine %}&mine={{ mine }}{% endif %}">
+              Suggested{% if sort == 'date' %}{% if dir == 'desc' %} ↓{% else %} ↑{% endif %}{% endif %}
+            </a>
+          </th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for movie in movies %}
+        <tr>
+          <td class="mn-col-title">
+            <a href="{% url 'movienights:movie_detail' guild.id movie.id %}">{{ movie.title }}</a>
+          </td>
+          <td class="mn-col-user">{{ movie.user.display_name }}</td>
+          {% if view == 'top' %}
+          <td class="mn-col-num">{% if movie.avg_rating %}{{ movie.avg_rating|floatformat:1 }}{% else %}—{% endif %}</td>
+          <td class="mn-col-num">{{ movie.rating_count }}</td>
+          <td class="mn-col-date">{% if movie.date_watched %}{{ movie.date_watched|date:"Y-m-d" }}{% else %}—{% endif %}</td>
+          {% else %}
+          <td class="mn-col-num">{{ movie.endorsement_count }}</td>
+          <td class="mn-col-date">{% if movie.date_suggested %}{{ movie.date_suggested|date:"Y-m-d" }}{% else %}—{% endif %}</td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="mn-pagination">
+    <span class="step-links">
+      {% if page_obj.has_previous %}
+        <a href="?view={{ view }}&q={{ q }}&sort={{ sort }}&dir={{ dir }}{% if mine %}&mine={{ mine }}{% endif %}&page=1">&laquo; first</a>
+        <a href="?view={{ view }}&q={{ q }}&sort={{ sort }}&dir={{ dir }}{% if mine %}&mine={{ mine }}{% endif %}&page={{ page_obj.previous_page_number }}">previous</a>
+      {% endif %}
+      <span class="current">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+      </span>
+      {% if page_obj.has_next %}
+        <a href="?view={{ view }}&q={{ q }}&sort={{ sort }}&dir={{ dir }}{% if mine %}&mine={{ mine }}{% endif %}&page={{ page_obj.next_page_number }}">next</a>
+        <a href="?view={{ view }}&q={{ q }}&sort={{ sort }}&dir={{ dir }}{% if mine %}&mine={{ mine }}{% endif %}&page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+      {% endif %}
+    </span>
+  </div>
+  {% else %}
+  <p class="mn-empty mn-pad">No movies in this list.</p>
+  {% endif %}
+</section>
+{% endblock %}

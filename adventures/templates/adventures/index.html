@@ -19,8 +19,11 @@
                 <a href="{% url 'adventures:game_tree' adventure.title %}">view game tree</a>
             </div>
             <div class="article-infobox-admin-controls infobox-admin-controls">
-                {% if perms.adventures.delete_article %}
-                    <a href = "{% url 'adventures:delete_adventure' adventure.id %}">Delete</a>
+                {% if user.is_staff %}
+                    <form class="admin-inline-form" action="{% url 'adventures:delete_adventure' adventure.id %}" method="post" onsubmit="return confirm('Delete this adventure?');">
+                        {% csrf_token %}
+                        <button type="submit" class="admin-link-button">Delete</button>
+                    </form>
                 {% endif %}
             </div>
         </div>
@@ -47,7 +50,7 @@
     {% else %}
     <p>No adventures are available.</p>
     {% endif %}
-    {% if perms.adventures.add_adventure %}
+    {% if user.is_staff %}
     <form action="{% url 'adventures:submit_adventures' %}" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         <input class="input-left-justified" type="file" id="adventure_files" name="adventure_files" multiple />

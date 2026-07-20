@@ -3,6 +3,9 @@
 
 {% block content %}
 <div class="content-form">
+    <p class="edit-album-view-link">
+        <a href="{% url 'photoalbums:photoalbum' photoalbum.title %}#album">View photo album</a>
+    </p>
     <form action="{% url 'photoalbums:edit_photoalbum' photoalbum.id %}" method="POST">
         {% csrf_token %}
         <fieldset>
@@ -22,12 +25,30 @@
 <div class="content-form2">
     <h1 class="submit-images-title">Photo Album Images</h1>
     <hr>
-    {% if photoalbum.images %}
-    <ul>
+    {% if photoalbum.images.exists %}
+    <div class="edit-image-list">
     {% for image in photoalbum.images.all %}
-        <li><a href="{{ image.image.url }}">{{image.image.url}}</a></li>
+        <div class="edit-image-row">
+            <div class="edit-image-preview">
+                {% if image.thumbnail %}
+                <img src="{{ image.thumbnail.url }}" alt="">
+                {% elif image.image %}
+                <img src="{{ image.image.url }}" alt="">
+                {% endif %}
+            </div>
+            <form class="edit-image-desc-form" action="{% url 'photoalbums:update_image' image.id %}" method="post">
+                {% csrf_token %}
+                <label for="desc-{{ image.id }}">description:</label>
+                <textarea id="desc-{{ image.id }}" name="description" rows="3">{{ image.description }}</textarea>
+                <button type="submit" class="admin-link-button">Save description</button>
+            </form>
+            <form class="admin-inline-form" action="{% url 'photoalbums:delete_image' image.id %}" method="post" onsubmit="return confirm('Delete this image?');">
+                {% csrf_token %}
+                <button type="submit" class="admin-link-button">Delete</button>
+            </form>
+        </div>
     {% endfor %}
-    </ul>
+    </div>
     {% endif %}
     <form action="{% url 'photoalbums:submit_images' photoalbum.id %}" method="POST" enctype="multipart/form-data">
         {% csrf_token %}

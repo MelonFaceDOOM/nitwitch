@@ -1,14 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Manage</title>
-</head>
-<body>
-    <h1>Manage Comments and Votes</h1>
+{% extends "base.html" %}
 
-    <h2>Comments</h2>
-    <table>
+{% block content %}
+<div class="manage-content">
+    <h1 class="manage-title">Manage</h1>
+
+    <h2 class="manage-subtitle">Users</h2>
+    <table class="manage-table">
+        <tr>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Action</th>
+        </tr>
+        {% for u in users %}
+        <tr id="user-row-{{ u.id }}">
+            <td>{{ u.email }}</td>
+            <td>
+                {% if u.is_superuser %}superuser{% elif u.is_staff %}admin{% else %}user{% endif %}
+            </td>
+            <td>
+                {% if u.is_superuser %}
+                    &mdash;
+                {% elif u.is_staff %}
+                    {% if u.id != request.user.id %}
+                    <button class="admin-link-button" onclick="setAdmin({{ u.id }}, false)">Demote</button>
+                    {% endif %}
+                {% else %}
+                    <button class="admin-link-button" onclick="setAdmin({{ u.id }}, true)">Promote</button>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2 class="manage-subtitle">Comments</h2>
+    <table class="manage-table">
         <tr>
             <th>IP Address</th>
             <th>Comment Text</th>
@@ -19,17 +44,17 @@
             <td>{{ comment.ip_address }}</td>
             <td>{{ comment.comment_text }}</td>
             <td>
-                <button onclick="deleteObject('{{ comment.get_comment_type }}', {{ comment.id }})">Delete</button>
+                <button class="admin-link-button" onclick="deleteObject('{{ comment.get_comment_type }}', {{ comment.id }})">Delete</button>
             </td>
             <td>
-                <button onclick="banIP('{{ comment.ip_address }}')">Ban IP</button>
+                <button class="admin-link-button" onclick="banIP('{{ comment.ip_address }}')">Ban IP</button>
             </td>
         </tr>
         {% endfor %}
     </table>
 
-    <h2>Votes</h2>
-    <table>
+    <h2 class="manage-subtitle">Votes</h2>
+    <table class="manage-table">
         <tr>
             <th>IP Address</th>
             <th>Vote Type</th>
@@ -39,43 +64,55 @@
         <tr id="row-vote-{{ vote.id }}">
             <td>{{ vote.ip_address }}</td>
             <td>{{ vote.comment_text|default_if_none:vote.vote_type }}</td>
-            <td>{{ vote.id }}</td>
             <td>
-                <button onclick="deleteObject('{{ vote.get_vote_type }}', {{ vote.id }})">Delete</button>
+                <button class="admin-link-button" onclick="deleteObject('{{ vote.get_vote_type }}', {{ vote.id }})">Delete</button>
             </td>
             <td>
-                <button onclick="banIP('{{ vote.ip_address }}')">Ban IP</button>
+                <button class="admin-link-button" onclick="banIP('{{ vote.ip_address }}')">Ban IP</button>
             </td>
         </tr>
         {% endfor %}
     </table>
-    <table>
+
+    <h2 class="manage-subtitle">Banned IPs</h2>
+    <table class="manage-table">
         <tr>
             <th>IP Address</th>
             <th>Action</th>
         </tr>
         {% for banned_ip in banned_ips %}
-        <tr id="row-vote-{{ banned_ip.id }}">
+        <tr id="row-banned-{{ banned_ip.id }}">
             <td>{{ banned_ip.ip_address }}</td>
             <td>
-                <button onclick="unBanIP('{{ banned_ip.ip_address }}')">Unban IP</button>
+                <button class="admin-link-button" onclick="unBanIP('{{ banned_ip.ip_address }}')">Unban IP</button>
             </td>
         </tr>
         {% endfor %}
     </table>
-</body>
-</html>
-
+</div>
 
 <script>
+function setAdmin(userId, makeAdmin) {
+    const url = makeAdmin ? "{% url 'promote_user' %}" : "{% url 'demote_user' %}";
+    fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+        body: JSON.stringify({ user_id: userId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
 function deleteObject(objectType, objectId) {
-    console.log(objectType);
     fetch("{% url 'delete_object' %}", {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
-        },
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
         body: JSON.stringify({ object_type: objectType, object_id: objectId })
     })
     .then(response => response.json())
@@ -92,16 +129,14 @@ function deleteObject(objectType, objectId) {
 function banIP(ip_address) {
     fetch("{% url 'ban_ip' %}", {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
-        },
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
         body: JSON.stringify({ ip_address: ip_address })
     })
     .then(response => response.json())
     .then(data => {
         if (data.status === 'success') {
             alert('IP address banned successfully');
+            location.reload();
         } else {
             alert('Error: ' + data.message);
         }
@@ -111,16 +146,14 @@ function banIP(ip_address) {
 function unBanIP(ip_address) {
     fetch("{% url 'unban_ip' %}", {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
-        },
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
         body: JSON.stringify({ ip_address: ip_address })
     })
     .then(response => response.json())
     .then(data => {
         if (data.status === 'success') {
             alert('IP address unbanned successfully');
+            location.reload();
         } else {
             alert('Error: ' + data.message);
         }
@@ -128,3 +161,4 @@ function unBanIP(ip_address) {
     .catch(error => console.error('Error:', error));
 }
 </script>
+{% endblock %}

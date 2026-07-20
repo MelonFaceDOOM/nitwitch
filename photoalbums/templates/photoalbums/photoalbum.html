@@ -9,14 +9,21 @@
         <p class="content-page-date"> {{ photoalbum_meta.pub_date }} </p>
     </div>
 </section>
-<div class="photoalbum-display-grid">
+<div class="photoalbum-display-grid" id="photoalbum-grid" data-album-images="{{ lightbox_images_json }}">
     {% for image in images %}
-    <div class="photoalbum-image-and-vote-container">
+    <div class="photoalbum-image-and-vote-container" id="thumb-{{ image.id }}" data-image-id="{{ image.id }}">
         <div class="photoalbum-image-container">
-            <a class="photoalbum-thumbnail-image" href="{% url 'photoalbums:image' image.id %}#image-title">
+            <button type="button" class="photoalbum-thumb-open" data-image-id="{{ image.id }}" aria-label="Open image">
+                {% if image.thumbnail %}
                 <img src="{{ image.thumbnail.url }}" alt="{{ image.description }}">
-            </a>
+                {% elif image.image %}
+                <img src="{{ image.image.url }}" alt="{{ image.description }}">
+                {% endif %}
+            </button>
         </div>
+        {% if image.description %}
+        <div class="photoalbum-thumb-caption" title="{{ image.description }}">{{ image.description }}</div>
+        {% endif %}
         <div class="photoalbum-vote">
             <button class="vote-increase vote-button{% if image.vote_type == 'increase' %} increase-clicked{% endif %}" data-ambiguity-object-id="{{ image.id }}" title="increase ambiguity" data-ambiguity-vote-url="{% url 'photoalbums:ambiguity_vote' %}">☋</button>
             <span class="ambiguity"> {{ image.ambiguity }}</span>
@@ -96,8 +103,42 @@
     </div>
     {% endif %}
 </section>
+
+<div id="photo-lightbox" class="photo-lightbox" hidden>
+    <div class="photo-lightbox-backdrop" data-lightbox-close></div>
+    <div class="photo-lightbox-dialog" role="dialog" aria-modal="true" aria-label="Image viewer">
+        <button type="button" class="photo-lightbox-close" data-lightbox-close aria-label="Close">×</button>
+        <div class="photo-lightbox-nav-row">
+            <button type="button" class="image-nav-arrow photo-lightbox-prev" aria-label="Previous">‹</button>
+            <div class="photo-lightbox-center">
+                <img class="photo-lightbox-image" src="" alt="">
+                <p class="photo-lightbox-position"></p>
+                <p class="photo-lightbox-description"></p>
+                <a class="photo-lightbox-comments" href="#">Comments</a>
+            </div>
+            <button type="button" class="image-nav-arrow photo-lightbox-next" aria-label="Next">›</button>
+        </div>
+    </div>
+</div>
+
+<div id="photo-fullres" class="photo-fullres" hidden>
+    <div class="photo-fullres-backdrop" data-fullres-close></div>
+    <img class="photo-fullres-image" src="" alt="">
+</div>
 {% endblock %}
 
 {% block scripts %}
     <script type="text/javascript" src="{% static 'js/ambiguity_vote.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/photoalbum_lightbox.js' %}"></script>
+    <script>
+    (function () {
+        var highlightId = {{ highlight_id|default:"null" }};
+        if (!highlightId) return;
+        var el = document.getElementById('thumb-' + highlightId);
+        if (!el) return;
+        el.classList.add('thumb-highlight');
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(function () { el.classList.remove('thumb-highlight'); }, 2500);
+    })();
+    </script>
 {% endblock %}

@@ -1,0 +1,247 @@
+{% extends "movienights/base_mn.html" %}
+{% load static %}
+
+{% block mn_body %}
+<section class="mn-panel mn-panel--flush">
+  <div class="mn-topbar">
+    <p class="mn-crumb">
+      <a href="{% url 'movienights:index' %}">Guilds</a>
+      / <a href="{% url 'movienights:guild_hub' guild.id %}">{{ guild.display_name }}</a>
+      / {{ movie.title }}
+    </p>
+    {% if viewer %}
+    <div class="mn-topbar-user">
+      <span>{{ viewer.display_name }}</span>
+      <form method="post" action="{% url 'movienights:clear_viewer' %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{% url 'movienights:index' %}">
+        <button type="submit" class="mn-link-btn">Log out</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+
+  {% for flash in flashes %}
+  <p class="mn-flash mn-flash--{{ flash.level }}">{{ flash.message }}</p>
+  {% endfor %}
+
+  <div class="mn-pad">
+    <header class="mn-detail-head">
+      <h1 class="mn-detail-title">
+        {{ movie.title }}{% if movie.is_watched %} - {% if movie.avg_rating %}{{ movie.avg_rating|floatformat:1 }}{% else %}—{% endif %}{% endif %}
+      </h1>
+      {% if not movie.is_watched %}
+      <p class="mn-detail-suggester">{{ movie.user.display_name }}</p>
+      {% endif %}
+      <div class="mn-detail-meta-row">
+        <span class="mn-detail-meta-left">
+          Suggested: {% if movie.date_suggested %}{{ movie.date_suggested|date:"M d, Y" }}{% else %}—{% endif %}
+        </span>
+        {% if movie.is_watched %}
+        <span class="mn-detail-meta-right mn-your-score" {% if viewer and viewer_has_rated %}data-mn-rating-edit{% endif %}>
+          {% if viewer %}
+            {% if viewer_has_rated %}
+            Your score:
+            <span class="mn-score-display">{{ viewer_rating.rating|floatformat:1 }}</span>
+            <form
+              class="mn-score-edit-form"
+              method="post"
+              action="{% url 'movienights:movie_rate' guild.id movie.id %}"
+              hidden
+            >
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{% url 'movienights:movie_detail' guild.id movie.id %}">
+              <input type="hidden" name="action" value="save">
+              <label class="mn-sr-only" for="rating-edit-yours">Your rating</label>
+              <input
+                class="mn-input mn-input--rating"
+                type="text"
+                inputmode="decimal"
+                id="rating-edit-yours"
+                name="rating"
+                value="{{ viewer_rating.rating }}"
+                placeholder="1–10"
+                required
+              >
+            </form>
+            <button type="button" class="mn-link-btn mn-rating-edit-toggle">edit</button>
+            <form method="post" action="{% url 'movienights:movie_rate' guild.id movie.id %}" class="mn-score-remove-form">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{% url 'movienights:movie_detail' guild.id movie.id %}">
+              <button type="submit" name="action" value="remove" class="mn-link-btn mn-link-btn--danger">remove</button>
+            </form>
+            {% else %}
+            <form
+              class="mn-your-score-add"
+              method="post"
+              action="{% url 'movienights:movie_rate' guild.id movie.id %}"
+            >
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{% url 'movienights:movie_detail' guild.id movie.id %}">
+              <input type="hidden" name="action" value="save">
+              <label for="rating-add-yours">Your score:</label>
+              <input
+                class="mn-input mn-input--rating"
+                type="text"
+                inputmode="decimal"
+                id="rating-add-yours"
+                name="rating"
+                placeholder="1–10"
+                required
+              >
+              <button type="submit" class="mn-btn">Add rating</button>
+            </form>
+            {% endif %}
+          {% else %}
+          Your score:
+          <a href="{% url 'movienights:discord_oauth_start' %}?next={% url 'movienights:movie_detail' guild.id movie.id %}">verify</a>
+          {% endif %}
+        </span>
+        {% elif viewer %}
+        <span class="mn-detail-meta-right">
+          {% if viewer_has_endorsed %}
+          <form method="post" action="{% url 'movienights:movie_unendorse' guild.id movie.id %}" class="mn-meta-action-form">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{% url 'movienights:movie_detail' guild.id movie.id %}">
+            <button type="submit" class="mn-link-btn">Unendorse</button>
+          </form>
+          {% else %}
+          <form method="post" action="{% url 'movienights:movie_endorse' guild.id movie.id %}" class="mn-meta-action-form">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{% url 'movienights:movie_detail' guild.id movie.id %}">
+            <button type="submit" class="mn-link-btn">Endorse</button>
+          </form>
+          {% endif %}
+        </span>
+        {% endif %}
+      </div>
+      {% if movie.is_watched %}
+      <div class="mn-detail-meta-row">
+        <span class="mn-detail-meta-left">
+          Seen: {% if movie.date_watched %}{{ movie.date_watched|date:"M d, Y" }}{% else %}—{% endif %}
+        </span>
+        <span class="mn-detail-meta-right">
+          {% if viewer %}
+          <a class="mn-link-btn" href="{% url 'movienights:movie_edit' guild.id movie.id %}">edit movie details</a>
+          {% endif %}
+        </span>
+      </div>
+      {% elif viewer %}
+      <div class="mn-detail-meta-row">
+        <span class="mn-detail-meta-left"></span>
+        <span class="mn-detail-meta-right">
+          <a class="mn-link-btn" href="{% url 'movienights:movie_edit' guild.id movie.id %}">edit movie details</a>
+        </span>
+      </div>
+      {% endif %}
+    </header>
+
+    {% if not movie.is_watched and not viewer %}
+    <p class="mn-empty">
+      <a href="{% url 'movienights:discord_oauth_start' %}?next={% url 'movienights:movie_detail' guild.id movie.id %}">Verify with Discord</a>
+      to endorse or rate this suggestion.
+    </p>
+    {% endif %}
+
+    <div class="mn-detail-section">
+      {% if movie.is_watched %}
+      <h2 class="mn-section-title">Ratings</h2>
+
+      {% if ratings %}
+      <ul class="mn-score-list">
+        <li class="mn-score-row mn-score-head" aria-hidden="true">
+          <span class="mn-score-value">score</span>
+          <span class="mn-score-user">user</span>
+        </li>
+        {% for r in ratings %}
+        <li class="mn-score-row">
+          <span class="mn-score-value">{{ r.rating|floatformat:1 }}</span>
+          <span class="mn-score-user">{{ r.user.display_name }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="mn-empty">No ratings.</p>
+      {% endif %}
+      {% else %}
+      <h2 class="mn-section-title">Endorsements</h2>
+      {% if endorsements %}
+      <ul class="mn-score-list">
+        {% for e in endorsements %}
+        <li class="mn-score-row">
+          <span class="mn-score-user">{{ e.user.display_name }}</span>
+          <span class="mn-score-date">{% if e.date %}{{ e.date|date:"Y-m-d" }}{% else %}—{% endif %}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="mn-empty">No endorsements.</p>
+      {% endif %}
+      {% if viewer %}
+      <form class="mn-inline-form mn-rate-under-list" method="post" action="{% url 'movienights:movie_rate' guild.id movie.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{% url 'movienights:movie_detail' guild.id movie.id %}">
+        <input type="hidden" name="action" value="save">
+        <label for="promote-rating">Rate</label>
+        <input
+          class="mn-input mn-input--rating"
+          type="text"
+          inputmode="decimal"
+          id="promote-rating"
+          name="rating"
+          placeholder="1–10"
+          required
+        >
+        <button type="submit" class="mn-btn">Rate (watch)</button>
+      </form>
+      {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% if movie.is_watched %}
+<section class="mn-panel">
+  <h2 class="mn-section-title">Reviews</h2>
+  {% if viewer %}
+    {% if not viewer_review and viewer_has_rated %}
+    <p class="mn-empty">
+      <a class="mn-link-btn" href="{% url 'movienights:movie_review_edit' guild.id movie.id %}">Write review</a>
+    </p>
+    {% elif not viewer_has_rated %}
+    <p class="mn-empty">Rate this movie first to write a review.</p>
+    {% endif %}
+  {% else %}
+  <p class="mn-empty">
+    <a href="{% url 'movienights:discord_oauth_start' %}?next={% url 'movienights:movie_detail' guild.id movie.id %}">Verify with Discord</a>
+    to write a review.
+  </p>
+  {% endif %}
+
+  {% if reviews %}
+  {% for rev in reviews %}
+  <div class="mn-review">
+    <div class="mn-review-meta">
+      {{ rev.user.display_name }}
+      {% if rev.date %} · {{ rev.date|date:"M d, Y" }}{% endif %}
+      {% if viewer and viewer_review and rev.id == viewer_review.id %}
+      <span class="mn-review-actions">
+        <a class="mn-link-btn" href="{% url 'movienights:movie_review_edit' guild.id movie.id %}">Edit</a>
+      </span>
+      {% endif %}
+    </div>
+    <div class="mn-review-text">{{ rev.review_text }}</div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <p class="mn-empty">No reviews.</p>
+  {% endif %}
+</section>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if movie.is_watched and viewer and viewer_has_rated %}
+<script type="text/javascript" src="{% static 'js/mn_rating_edit.js' %}"></script>
+{% endif %}
+{% endblock %}

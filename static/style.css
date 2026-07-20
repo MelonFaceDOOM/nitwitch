@@ -1,20 +1,32 @@
-/* font stuff */
-
-@font-face {
-  font-family: 'Poppins-Regular';
-  src: local('Poppins-Regular'),
-       url('../static/fonts/Poppins-Regular.ttf') format("truetype");
-}
-/**********************************************************/
-
-
-/* defining some color vars */
+/* Sheet geometry + type scale
+ *
+ * Two related units (say “unit” vs “column” — never just “cell” alone):
+ *   --unit  26px  = one visual background line step (what people mean by “cell”
+ *                   when counting gridlines on the cream sheet)
+ *   --cell  52px  = one CSS grid track (= 2 units). .gridbox is 12 columns.
+ *
+ * Sheet: 26 units wide (676px). .gridbox is 12 columns (624px), centered →
+ * 1 unit gutter on each side outside the CSS grid.
+ *
+ * Default main content span: grid-column 2/12 (10 columns). Prefer sheet-*
+ * utilities below for half-column nudges/widens instead of ad-hoc px calcs.
+ */
 
 :root {
   --main-background: #f2e1c4;
   --moonlight: #211626;
   --green: #4C8B68;
   --grey: #b0b0b0;
+  --unit: 26px;
+  --half: var(--unit); /* alias: half a CSS column = one visual unit */
+  --cell: calc(2 * var(--unit));
+  --sheet-width: calc(26 * var(--unit));
+  --title-size: 35px;
+  --title-lh: var(--cell);
+  --body-size: 16px;
+  --body-lh: var(--unit);
+  --meta-size: 14px;
+  --border-double: 3px double black;
 }
 
 
@@ -33,7 +45,7 @@ when dark mode is enable */
 /* general global styling */
 
 body {
-  color: var(black);
+  color: black;
   font-size: 1.3rem;
 }
 
@@ -47,7 +59,7 @@ fieldset {
   line-height: 0.78;
   color: black;
   text-transform: uppercase;
-  font-size: 35px;
+  font-size: var(--title-size);
   text-align: right;
 }
 
@@ -70,11 +82,6 @@ a:hover {
 .title-page-content-list a {
   text-decoration: none;
 }
-
-.title-font {
-  line-height: 52px;
-  font-size: 35px;
-}
 /**********************************************************/
 
 
@@ -88,7 +95,7 @@ a:hover {
   margin-top: 80px;
   display: grid;
   justify-items: center;
-  width: 676px;
+  width: var(--sheet-width);
   height: 988px;
 }
 
@@ -97,32 +104,34 @@ a:hover {
   margin-top: 80px;
   display: grid;
   justify-items: center;
-  width: 676px;
+  width: var(--sheet-width);
   height: 858px;
-  /* background visual gridlines */
+  /* background visual gridlines — one line every --unit */
   --w: 1px; /* Thickness of the line */
-  --vn: 26;   /* vertical lines */
+  --vn: 26;   /* vertical lines (= sheet units) */
   --hn: 33;   /* horizontal lines */
   --line-color: rgba(128, 128, 128, 0.6);
   position: relative;
+  isolation: isolate;
 
   /* Vertical lines */
   background: linear-gradient(90deg, #0000 calc(100% - var(--w)),  var(--line-color) 0);
-  /* this calcs to some shit like "calc(4.7619% + 0.047619px) 100%" I have no idea how to make it work properly. can just replace with 25px maybe */
   background-size: calc((100% - var(--vn) * var(--w)) / (var(--vn)) + var(--w)) 100%;
+}
 
-  /* Horizontal lines */
-  &::before {
-    content: '';
-    background: linear-gradient(0deg, #0000 calc(100% - var(--w)), var(--line-color) 0);
-    background-size: 100% calc((100% - var(--hn) * var(--w)) / (var(--hn)) + var(--w));
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    width: 100%;
-    height: 100%;
-    pointer-events: none; /* '::before' prevents child elements from being interacted with. this fixes. */
-  }
+/* Horizontal lines behind in-flow content (panels, text) but above vertical bg.
+   12px offset is intentional (≈ half-unit) so painted lines sit between tracks. */
+.background-grid::before {
+  content: '';
+  background: linear-gradient(0deg, #0000 calc(100% - var(--w)), var(--line-color) 0);
+  background-size: 100% calc((100% - var(--hn) * var(--w)) / (var(--hn)) + var(--w));
+  position: absolute;
+  z-index: -1;
+  top: 12px;
+  left: 12px;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 .background-grid-medium {
   height: 1248px;
@@ -136,9 +145,9 @@ a:hover {
 .gridbox {
   margin-top: 12px;
   display: grid;
-  grid-template-rows: repeat(4, 52px) min-content;
+  grid-template-rows: repeat(4, var(--cell)) min-content;
   grid-auto-rows: min-content;
-  grid-template-columns: repeat(12, 52px);
+  grid-template-columns: repeat(12, var(--cell));
   justify-items: center;
   grid-column-gap: 0px;
   grid-row-gap: 0px;
@@ -146,6 +155,9 @@ a:hover {
   max-height: 1000px;
   aspect-ratio: 1 / 2;
 }
+
+/* Sheet placement helpers (.sheet-nudge-x-*, .sheet-widen-*) live below
+   .article-page-content so their width/margin win over width: 100%. */
 /**********************************************************/
 
 .site-links a{
@@ -153,7 +165,7 @@ a:hover {
 }
 .site-links{
   position: relative;
-  left: 26px;
+  left: var(--unit);
   grid-column: 8/13;
   max-height: 100px;
   width: 260px;
@@ -169,6 +181,798 @@ a:hover {
 
 .site-links3{
   grid-row: 3;
+}
+
+/**********************************************************/
+/* movienights panel theme — opaque surfaces over the grid */
+.mn {
+  --mn-surface: var(--main-background);
+  --mn-control-bg: #f7ebda; /* cream control fill — softer than white on panels */
+  --mn-ink: #000;
+  --mn-muted: var(--grey);
+  --mn-accent: var(--green);
+  --mn-border: var(--border-double);
+  --mn-pad: 13px;
+  --mn-gap: var(--half);
+  --mn-body: var(--body-size);
+  --mn-meta: var(--meta-size);
+  --mn-lh: var(--body-lh);
+  color: var(--mn-ink);
+  font-family: 'Roboto', sans-serif;
+  text-align: left;
+}
+
+.mn-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mn-gap);
+  width: 100%;
+}
+
+.mn-panel {
+  background: var(--mn-surface);
+  outline: var(--mn-border);
+  padding: var(--mn-pad);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.mn-panel--flush {
+  padding: 0;
+}
+
+.mn-crumb {
+  margin: 0 0 13px 0;
+  font-size: var(--mn-meta);
+  line-height: var(--mn-lh);
+  color: var(--mn-muted);
+}
+
+.mn-crumb a {
+  color: var(--mn-ink);
+}
+
+.mn-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 13px;
+  padding: var(--mn-pad);
+  border-bottom: 1px solid var(--mn-muted);
+  box-sizing: border-box;
+}
+
+.mn-topbar .mn-crumb {
+  margin: 0;
+}
+
+.mn-topbar-user {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 13px;
+  margin-left: auto;
+  font-size: var(--mn-meta);
+  line-height: var(--mn-lh);
+  color: var(--mn-muted);
+}
+
+.mn-topbar-user form {
+  display: inline;
+  margin: 0;
+  padding: 0;
+}
+
+.mn button.mn-link-btn {
+  -webkit-appearance: none;
+  appearance: none;
+  display: inline;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: var(--mn-ink);
+  cursor: pointer;
+  text-decoration: underline;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.mn button.mn-link-btn:hover {
+  color: var(--mn-accent);
+}
+
+.mn-pad {
+  padding: var(--mn-pad);
+}
+
+.mn-header {
+  margin: 0;
+  text-align: left;
+}
+
+.mn-header--center {
+  text-align: center;
+}
+
+.mn-header h1 {
+  margin: 0;
+  line-height: var(--title-lh);
+  font-size: var(--title-size);
+  font-weight: normal;
+}
+
+.mn-header .mn-subhead {
+  margin: 0;
+  font-size: var(--mn-body);
+  line-height: var(--mn-lh);
+  color: var(--mn-ink);
+}
+
+.mn-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.mn-toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 13px;
+  font-size: var(--mn-body);
+  line-height: var(--mn-lh);
+}
+
+.mn-filters a {
+  margin-right: 13px;
+  color: var(--mn-ink);
+}
+
+.mn-filters a.is-active {
+  font-weight: bold;
+  text-decoration: underline;
+  color: var(--mn-accent);
+}
+
+.mn-filter-tri {
+  gap: 8px;
+}
+
+.mn-filter-label {
+  color: var(--mn-muted);
+  margin-right: 4px;
+}
+
+.mn-filter-tri a {
+  margin-right: 0;
+}
+
+.mn-input {
+  height: var(--half);
+  max-width: 260px;
+  box-sizing: border-box;
+  border: 2px solid black;
+  background: var(--mn-control-bg);
+  padding: 0 4px;
+  font: inherit;
+  color: var(--mn-ink);
+}
+
+.mn-input--rating {
+  max-width: 5em;
+}
+
+.mn-input--wide {
+  max-width: 320px;
+  flex: 1 1 180px;
+}
+
+.mn-inline-form,
+.mn-rate-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 13px;
+  margin: 0 0 13px 0;
+  font-size: var(--mn-body);
+  line-height: var(--mn-lh);
+  text-align: left;
+}
+
+.mn-inline-form:last-child,
+.mn-rate-form:last-child {
+  margin-bottom: 0;
+}
+
+.mn-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 13px;
+  margin: 0 0 13px 0;
+  font-size: var(--mn-body);
+  line-height: var(--mn-lh);
+}
+
+.mn-actions:last-child {
+  margin-bottom: 0;
+}
+
+.mn-flash {
+  margin: 0 13px 13px 13px;
+  padding: 8px 13px;
+  border: 2px solid black;
+  background: var(--mn-control-bg);
+  font-size: var(--mn-meta);
+  line-height: var(--mn-lh);
+  text-align: left;
+}
+
+.mn-flash--ok {
+  border-color: var(--mn-accent);
+}
+
+.mn-flash--err {
+  border-color: #a33;
+}
+
+.mn-btn--danger:hover {
+  border-color: #a33;
+  color: #a33;
+}
+
+.mn-textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border: 2px solid black;
+  background: var(--mn-control-bg);
+  padding: 8px;
+  font: inherit;
+  font-size: var(--mn-body);
+  line-height: var(--mn-lh);
+  color: var(--mn-ink);
+  resize: vertical;
+  margin-bottom: 13px;
+}
+
+.mn-review-form {
+  margin-bottom: 13px;
+  text-align: left;
+}
+
+.mn-review-actions {
+  display: inline;
+  margin-left: 13px;
+}
+
+.mn-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.mn-btn {
+  display: inline-block;
+  height: var(--half);
+  line-height: 22px;
+  border: 2px solid black;
+  background: var(--mn-control-bg);
+  padding: 0 13px;
+  font: inherit;
+  color: var(--mn-ink);
+  cursor: pointer;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.mn-btn:hover {
+  border-color: var(--mn-accent);
+  color: var(--mn-accent);
+}
+
+.mn-btn--quiet {
+  color: var(--mn-muted);
+}
+
+.mn-btn--quiet:hover {
+  border-color: var(--mn-muted);
+  color: var(--mn-ink);
+}
+
+a.mn-link-btn {
+  color: var(--mn-ink);
+  text-decoration: underline;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+a.mn-link-btn:hover {
+  color: var(--mn-accent);
+}
+
+.mn-task-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.mn-task-list--row {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 13px;
+  padding: 13px;
+  box-sizing: border-box;
+}
+
+.mn-task-list--row .mn-task {
+  flex: 0 0 auto;
+  padding: 0;
+  border-bottom: none;
+  text-align: center;
+}
+
+.mn-task-sep {
+  flex: 0 0 auto;
+  font-size: 20px;
+  line-height: var(--mn-lh);
+  color: var(--mn-ink);
+  user-select: none;
+}
+
+/* interactive list rows (hub tasks + guild index) */
+.mn-task,
+.mn-guild {
+  display: block;
+  padding: 13px;
+  border-bottom: 1px solid var(--mn-muted);
+  text-decoration: none;
+  color: var(--mn-ink);
+}
+
+.mn-task:last-child,
+.mn-guild:last-child {
+  border-bottom: none;
+}
+
+.mn-task:hover .mn-task-title,
+.mn-guild:hover .mn-guild-title {
+  color: var(--mn-accent);
+}
+
+.mn-task-title,
+.mn-guild-title {
+  display: block;
+  font-size: 20px;
+  line-height: var(--mn-lh);
+}
+
+.mn-task-desc,
+.mn-guild-meta {
+  display: block;
+  font-size: var(--mn-meta);
+  line-height: var(--mn-lh);
+  color: var(--mn-muted);
+}
+
+.mn-task.is-locked .mn-task-title::after {
+  content: " (set viewer)";
+  font-size: var(--mn-meta);
+  color: var(--mn-muted);
+}
+
+.mn-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.mn-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--mn-meta);
+  line-height: var(--mn-lh);
+  text-align: left;
+}
+
+.mn-table th,
+.mn-table td {
+  border-bottom: 1px solid var(--mn-muted);
+  padding: 4px 8px;
+  vertical-align: top;
+}
+
+.mn-table th {
+  font-weight: bold;
+  border-bottom: 2px solid black;
+}
+
+.mn-table .mn-col-title {
+  width: 36%;
+  word-wrap: break-word;
+}
+
+.mn-table .mn-col-user {
+  width: 28%;
+  min-width: 9em;
+  font-size: 12px;
+  line-height: var(--mn-lh);
+  word-break: break-word;
+}
+
+.mn-table .mn-col-num {
+  width: 4.5em;
+  white-space: nowrap;
+}
+
+.mn-table .mn-col-date {
+  width: 7em;
+  white-space: nowrap;
+}
+
+.mn-table .mn-col-status {
+  width: 7.5em;
+  white-space: nowrap;
+}
+
+.mn-table th a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.mn-table th a:hover {
+  color: var(--mn-accent);
+  text-decoration: underline;
+}
+
+.mn-count {
+  margin: 0;
+  font-size: var(--mn-meta);
+  line-height: var(--mn-lh);
+  color: var(--mn-muted);
+}
+
+.mn-badge {
+  display: inline-block;
+  border: 1px solid black;
+  padding: 0 6px;
+  font-size: 12px;
+  line-height: 24px;
+  background: var(--mn-surface);
+}
+
+.mn-badge--open {
+  border-style: dashed;
+}
+
+.mn-meta {
+  color: var(--mn-muted);
+  font-size: var(--mn-meta);
+  line-height: var(--mn-lh);
+}
+
+.mn-review-meta {
+  color: var(--mn-ink);
+  font-size: var(--mn-meta);
+  line-height: var(--mn-lh);
+}
+
+.mn-empty,
+.mn-list,
+.mn-review-text,
+.mn-detail-meta,
+.mn-detail-stats,
+.mn-viewer-note,
+.mn-viewer-current {
+  font-size: var(--mn-body);
+  line-height: var(--mn-lh);
+}
+
+.mn-empty {
+  margin: 0;
+}
+
+.mn-section-title {
+  margin: 0 0 13px 0;
+  line-height: var(--mn-lh);
+  font-size: 20px;
+  font-weight: normal;
+}
+
+.mn-list {
+  margin: 0;
+  padding-left: var(--half);
+}
+
+.mn-review {
+  margin-bottom: 13px;
+}
+
+.mn-review:last-child {
+  margin-bottom: 0;
+}
+
+.mn-review-text {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.mn-detail-meta,
+.mn-detail-stats,
+.mn-viewer-note {
+  margin: 0 0 13px 0;
+  text-align: left;
+}
+
+.mn-detail-stats:last-child,
+.mn-viewer-note:last-child {
+  margin-bottom: 0;
+}
+
+.mn-detail-meta .mn-badge {
+  margin-right: 8px;
+}
+
+.mn-detail-head {
+  margin: 0 0 13px 0;
+  text-align: center;
+}
+
+.mn-detail-title {
+  margin: 0;
+  line-height: var(--title-lh);
+  font-size: var(--title-size);
+  font-weight: normal;
+  text-align: center;
+}
+
+.mn-title-edit {
+  margin-left: 8px;
+  font-size: var(--mn-meta);
+  line-height: var(--mn-lh);
+  font-weight: normal;
+  color: var(--mn-muted);
+  text-decoration: underline;
+  vertical-align: middle;
+}
+
+.mn-title-edit:hover {
+  color: var(--mn-accent);
+}
+
+.mn-your-score {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.mn-your-score-add {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.mn-detail-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px 13px;
+  margin-top: 4px;
+  font-size: var(--mn-body);
+  line-height: var(--mn-lh);
+  color: var(--mn-ink);
+  text-align: left;
+}
+
+.mn-detail-meta-left,
+.mn-detail-meta-right {
+  color: var(--mn-ink);
+}
+
+.mn-detail-meta-right {
+  margin-left: auto;
+  text-align: right;
+}
+
+.mn-detail-suggester {
+  margin: 4px 0 0 0;
+  font-size: var(--mn-body);
+  line-height: var(--mn-lh);
+  text-align: center;
+  color: var(--mn-ink);
+}
+
+.mn-meta-action-form {
+  display: inline;
+  margin: 0;
+}
+
+.mn-rate-under-list {
+  margin-top: 13px;
+}
+
+.mn-detail-section {
+  margin-top: 13px;
+  padding-top: 13px;
+  border-top: 1px solid var(--mn-muted);
+  text-align: left;
+}
+
+.mn-score-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+
+.mn-score-row {
+  display: flex;
+  align-items: baseline;
+  gap: 13px;
+  padding: 0;
+  font-size: var(--mn-body);
+  line-height: var(--mn-lh);
+}
+
+.mn-score-head {
+  margin-bottom: 4px;
+  font-size: var(--mn-meta);
+  color: var(--mn-muted);
+}
+
+.mn-score-head .mn-score-value,
+.mn-score-head .mn-score-user {
+  font-weight: normal;
+  font-size: inherit;
+  color: inherit;
+}
+
+.mn-score-value {
+  flex: 0 0 2.5em;
+  font-weight: bold;
+}
+
+.mn-score-edit-form {
+  flex: 0 0 auto;
+  margin: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.mn-score-edit-form:not([hidden]) {
+  display: flex;
+}
+
+.mn-score-edit-form[hidden] {
+  display: none !important;
+}
+
+.mn-score-edit-form .mn-input--rating {
+  max-width: 4.5em;
+}
+
+.mn-score-add-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 13px;
+  margin: 0;
+  flex: 0 1 auto;
+}
+
+.mn-score-add-form .mn-input--rating {
+  max-width: 4.5em;
+}
+
+.mn-score-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 13px;
+  margin-left: 13px;
+  font-size: var(--mn-meta);
+  line-height: var(--mn-lh);
+}
+
+.mn-score-remove-form {
+  display: inline;
+  margin: 0;
+}
+
+a.mn-link-btn--danger,
+button.mn-link-btn--danger {
+  color: var(--mn-muted);
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+a.mn-link-btn--danger:hover,
+button.mn-link-btn--danger:hover {
+  color: #a33;
+}
+
+button.mn-link-btn {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  color: var(--mn-ink);
+  text-decoration: underline;
+}
+
+button.mn-link-btn:hover {
+  color: var(--mn-accent);
+}
+
+.mn-score-user {
+  flex: 1 1 auto;
+  min-width: 12em;
+  font-size: var(--mn-body);
+  font-weight: normal;
+  line-height: var(--mn-lh);
+  word-break: break-all;
+}
+
+.mn-score-date {
+  flex: 0 0 7em;
+  text-align: right;
+  font-size: var(--mn-meta);
+  color: var(--mn-muted);
+  white-space: nowrap;
+}
+
+.mn-viewer-current {
+  margin: 0 0 13px 0;
+}
+
+.mn-viewer-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 13px;
+  font-size: var(--mn-body);
+  line-height: var(--mn-lh);
+}
+
+.mn-viewer-form:last-child {
+  margin-bottom: 0;
+}
+
+.mn-viewer-matches {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: var(--mn-body);
+  line-height: var(--mn-lh);
+}
+
+.mn-pagination {
+  margin: 0;
+  padding: 13px;
+  font-size: var(--mn-meta);
+  line-height: var(--mn-lh);
 }
 
 /**********************************************************/
@@ -202,7 +1006,7 @@ a:hover {
   font-family: 'Roboto', sans-serif;
   line-height: 0.78;
   color: black;
-  font-size: 35px;
+  font-size: var(--title-size);
   text-align: left;
 }
 .header-title a {
@@ -213,7 +1017,7 @@ a:hover {
 
 /* shitty NW diagonal lines header art */
 .header-banner {
-  margin-left: 53px; /* push it over 1 cell */
+  margin-left: var(--cell); /* nudge 1 CSS column (= 2 visual units) */
   grid-row: 2/4;
   grid-column: 1/7;
   width: 100%;
@@ -223,12 +1027,12 @@ a:hover {
 .header-segments{
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  height; 100%;
+  height: 100%;
   width: 100%;
 }
 
 div.diagonal-container {
-      height: 78px;
+      height: calc(3 * var(--unit));
 }
 
 .to-right {
@@ -244,7 +1048,7 @@ div.diagonal-container {
 .moonbox {
   position: relative;
   top: 1px;
-  left: 26px;
+  left: var(--unit);
   height: 48%;
   width: 48%;
   justify-self: start;
@@ -336,27 +1140,31 @@ div.diagonal-container {
 
 /**********************************************************/
 /* actual site content stuff */
-.title-page-content {
+.title-page-content,
+.article-page-content,
+.photoalbum-page-content {
   grid-row: 6;
   display: grid;
   grid-column: 2/12;
   width: 100%;
   text-align: center;
 }
+
+.article-page-content,
+.photoalbum-page-content {
+  overflow-wrap: break-word;
+}
+
+/* Sheet placement helpers — offsets/widens in visual units (26px), not CSS
+   columns. Combine with the default 2/12 content span. Reset on mobile. */
+.sheet-nudge-x-1 { margin-left: var(--unit); }
+.sheet-nudge-x-2 { margin-left: calc(2 * var(--unit)); }
+.sheet-widen-3 { width: calc(100% + 3 * var(--unit)); }
 
 .title-page-content-item {
   max-width: 600px;
   white-space: nowrap;
   overflow: hidden;
-}
-
-.article-page-content {
-  grid-row: 6;
-  display: grid;
-  grid-column: 2/12;
-  width: 100%;
-  text-align: center;
-  overflow-wrap: break-word;
 }
 
 .title-page-content-list {
@@ -373,43 +1181,15 @@ div.diagonal-container {
   text-align: left;
 }
 
-.pagination {
+.pagination,
+.comments-pagination,
+.photoalbum-images-pagination {
   position: relative;
   top: 4px;
 }
 
-/* individual photoalbum page */
-.photoalbum-title {
-  position: relative;
-  top: 6px;
-  grid-row: 5;
-  grid-column: 1/13;
-  max-width: 775px;
-  margin: 0 auto;
-  text-align: left;
-}
-
-.photoalbum-author {
-  grid-row: 6;
-  grid-column: 1/13;
-  margin: 0;
-}
-
-.photoalbum-pub-date {
-  grid-row: 7;
-  grid-column: 1/13;
-}
-
 .photoalbum-thumbnail-image {
-  display: block; /* Ensure the anchor element behaves as a block-level element */
-}
-
-.photoalbum-thumbnail-image img {
-  max-width: 100%; /* Ensure images don't exceed their container's width */
-  height: auto; /* Maintain aspect ratio */
-}
-
-.photoalbum-thumbnail-image {
+  display: block;
   width: 100%;
   height: auto;
   object-fit: cover;
@@ -417,25 +1197,17 @@ div.diagonal-container {
   z-index: 2;
 }
 
-/* browse photoalbums */
-.photoalbum-page-content {
-  grid-row: 6;
-  display: grid;
-  grid-column: 2/12;
-  width: 100%;
-  text-align: center;
-  overflow-wrap: break-word;
+.photoalbum-thumbnail-image img {
+  max-width: 100%;
+  height: auto;
 }
 
-.photoalbum-images-pagination{
-  position: relative;
-  top: 4px;
+.photoalbum-images-pagination {
   grid-column: 1/5;
   text-align: center;
 }
 
-.comments-pagination{
-  position: relative;
+.comments-pagination {
   top: 1px;
   text-align: center;
 }
@@ -445,9 +1217,10 @@ div.diagonal-container {
 .infobox {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(10, 52px) 26px;
-  outline-style: double;
-  margin-bottom: 26px;
+  grid-template-columns: repeat(10, var(--cell)) var(--half);
+  background: var(--main-background);
+  outline: var(--border-double);
+  margin-bottom: var(--half);
 }
 
 .infobox-date {
@@ -532,6 +1305,7 @@ div.diagonal-container {
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: var(--main-background);
 }
 
 .photoalbum-infobox-description {
@@ -540,11 +1314,10 @@ div.diagonal-container {
   right: 22px;
   width: 370px;
   top: 6px;
-  line-height:
   grid-row: 2;
   grid-column: 4/12;
-  font-size: 16px;
-  line-height: 26px;
+  font-size: var(--body-size);
+  line-height: var(--body-lh);
   overflow: hidden;
 }
 
@@ -596,8 +1369,8 @@ div.diagonal-container {
 
 .bottom-page-comments-title {
   margin-top: 39px;
-  line-height: 52px;
-  font-size: 35px;
+  line-height: var(--title-lh);
+  font-size: var(--title-size);
   margin-bottom: 0px;
 }
 
@@ -621,7 +1394,8 @@ div.diagonal-container {
 /**********************************************************/
 /* content page elements */
 /* these are all children of grid-box that come after the header stuff */
-.content-info {
+.content-info,
+.image-content-info {
   grid-row: 5;
   grid-column: 1/13;
   width: 100%;
@@ -629,6 +1403,9 @@ div.diagonal-container {
   word-wrap: break-word;
   display: flex;
   flex-direction: column;
+}
+
+.content-info {
   margin-bottom: 55px;
 }
 
@@ -636,8 +1413,8 @@ div.diagonal-container {
   position: relative;
   top: -12px;
   margin: 0;
-  line-height: 52px;
-  font-size: 35px;
+  line-height: var(--title-lh);
+  font-size: var(--title-size);
   text-align: center;
 }
 
@@ -693,6 +1470,7 @@ div.diagonal-container {
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: var(--main-background);
 }
 
 .photoalbum-vote {
@@ -715,16 +1493,14 @@ div.diagonal-container {
   border: none;
   outline: none;
 }
-.vote-increase {
-}
 .vote-decrease {
   position: relative;
   bottom: 1px;
 }
 
 /* edit article */
-.content-form {
-  grid-row: 5;
+.content-form,
+.content-form2 {
   grid-column: 1/13;
   width: 100%;
   text-align: center;
@@ -733,14 +1509,12 @@ div.diagonal-container {
   flex-direction: column;
 }
 
+.content-form {
+  grid-row: 5;
+}
+
 .content-form2 {
   grid-row: 6;
-  grid-column: 1/13;
-  width: 100%;
-  text-align: center;
-  word-wrap: break-word;
-  display: flex;
-  flex-direction: column;
 }
 
 .submit-images-title {
@@ -757,16 +1531,6 @@ div.diagonal-container {
 /**********************************************************/
 /* image page */
 
-.image-content-info {
-  grid-row: 5;
-  grid-column: 1/13;
-  width: 100%;
-  text-align: left;
-  word-wrap: break-word;
-  display: flex;
-  flex-direction: column;
-}
-
 .image-page-container{
   grid-row: 6;
   grid-column: 1/13;
@@ -778,6 +1542,288 @@ div.diagonal-container {
   position: relative;
   z-index: 2;
   margin: 0 auto;
+  display: block;
+  max-height: 70vh;
+  width: auto;
+}
+
+.image-position {
+  margin: 0;
+  text-align: center;
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  line-height: 26px;
+  color: black;
+}
+
+.image-nav-row {
+  display: grid;
+  grid-template-columns: 52px 1fr 52px;
+  align-items: center;
+  column-gap: 26px;
+  width: 100%;
+}
+
+.image-nav-center {
+  min-width: 0;
+}
+
+.image-nav-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 104px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 78px;
+  line-height: 1;
+  color: var(--green);
+  text-decoration: none;
+  border: 2px solid black;
+  background: white;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+.image-nav-arrow:link,
+.image-nav-arrow:visited {
+  color: var(--green);
+}
+
+.image-nav-arrow:hover {
+  color: #67397D;
+  background: var(--main-background);
+}
+
+.image-nav-disabled {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.image-vote-container {
+  margin-top: 13px;
+}
+
+.image-description {
+  margin: 13px 0 0 0;
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  line-height: 26px;
+  text-align: center;
+  color: black;
+  word-wrap: break-word;
+}
+
+.photoalbum-thumb-open {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.photoalbum-thumb-open img {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  margin: 0 auto;
+}
+
+.photoalbum-thumb-caption {
+  width: 130px;
+  max-width: 130px;
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  font-size: 12px;
+  line-height: 26px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  color: black;
+}
+
+.thumb-highlight {
+  outline: 3px solid var(--green);
+  outline-offset: 2px;
+}
+
+.edit-image-list {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  margin-bottom: 26px;
+  text-align: left;
+}
+
+.edit-image-row {
+  display: grid;
+  grid-template-columns: 130px 1fr auto;
+  gap: 26px;
+  align-items: start;
+  border: 1px solid var(--grey);
+  padding: 13px;
+}
+
+.edit-image-preview {
+  width: 124px;
+  height: 124px;
+  border: 2px solid black;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--main-background);
+}
+
+.edit-image-preview img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.edit-image-desc-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.edit-image-desc-form textarea {
+  width: 100%;
+  max-width: 400px;
+  min-height: 78px;
+  box-sizing: border-box;
+}
+
+.edit-album-view-link {
+  margin: 0 0 26px 0;
+  font-family: 'Roboto', sans-serif;
+  font-size: 18px;
+  line-height: 26px;
+  text-align: left;
+}
+
+.photo-lightbox,
+.photo-fullres {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+}
+
+.photo-fullres {
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photo-lightbox-backdrop,
+.photo-fullres-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(33, 22, 38, 0.72);
+}
+
+.photo-lightbox-dialog {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 26px;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.photo-lightbox-dialog > * {
+  pointer-events: auto;
+}
+
+.photo-lightbox-close {
+  position: absolute;
+  top: 26px;
+  right: 26px;
+  width: 52px;
+  height: 52px;
+  font-size: 35px;
+  line-height: 1;
+  border: 2px solid black;
+  background: white;
+  color: black;
+  cursor: pointer;
+  font-family: 'Roboto', sans-serif;
+}
+
+.photo-lightbox-close:hover {
+  color: #67397D;
+  background: var(--main-background);
+}
+
+.photo-lightbox-nav-row {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 780px) 52px;
+  align-items: center;
+  column-gap: 26px;
+  width: 100%;
+  max-width: 936px;
+}
+
+.photo-lightbox-center {
+  min-width: 0;
+  text-align: center;
+  background: var(--main-background);
+  border: 2px solid black;
+  padding: 26px;
+  box-sizing: border-box;
+}
+
+.photo-lightbox-image {
+  display: block;
+  max-width: 100%;
+  max-height: 70vh;
+  margin: 0 auto;
+  cursor: zoom-in;
+}
+
+.photo-lightbox-position,
+.photo-lightbox-description {
+  margin: 13px 0 0 0;
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  line-height: 26px;
+  color: black;
+}
+
+.photo-lightbox-comments {
+  display: inline-block;
+  margin-top: 13px;
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  line-height: 26px;
+}
+
+.photo-lightbox .image-nav-arrow {
+  cursor: pointer;
+}
+
+.photo-fullres-image {
+  position: relative;
+  z-index: 1;
+  display: block;
+  max-width: 100vw;
+  max-height: 100vh;
+  margin: 0 auto;
+  object-fit: contain;
+  cursor: zoom-out;
+}
+
+.photo-fullres[hidden],
+.photo-lightbox[hidden] {
+  display: none !important;
 }
 
 
@@ -814,36 +1860,6 @@ img {
   outline-style: solid;
   padding: 0.5rem;
 }
-
-.box-header {
-  font-family: Poppins-Regular;
-  font-size: 1.5rem;
-  padding: 0.2rem;
-}
-
-.box-subheader {
-  padding: 0.3rem;
-}
-
-.box-text {
-
-}
-
-.box-admin-controls {
-  text-align: right;
-}
-
-.box-admin-controls a:link  {
-  color: #FF4365;
-}
-
-.box-admin-controls a:visited  {
-  color: #FF4365;
-}
-
-.box-admin-controls a:hover {
-  color: #B61D49;
-}
 /**********************************************************/
 
 /* markup css */
@@ -874,6 +1890,14 @@ it's important that they are defined at the end of the css file so that they can
 .dark-mode-bg {
   background-color: #fbfbfb;
   color: black;
+}
+
+.dark-mode-bg .photoalbum-infobox-thumbnail,
+.dark-mode-bg .photoalbum-image-container,
+.dark-mode-bg .edit-image-preview,
+.dark-mode-bg .infobox,
+.dark-mode-bg .mn-panel {
+  background-color: #fbfbfb;
 }
 
 /**********************************************************/
@@ -953,4 +1977,312 @@ it's important that they are defined at the end of the css file so that they can
 .info-option-link {
     display: block; /* automatically makes newline after each link instead of placing them side-by-side*/
     margin-bottom: 10px;
+}
+
+/**********************************************************/
+/* admin action buttons rendered inline with the link-style controls
+   (used in infobox admin controls and the manage page) */
+.admin-link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: black;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.admin-link-button:hover {
+  color: #67397D;
+}
+.admin-inline-form {
+  display: inline;
+  margin: 0;
+  margin-left: 8px;
+}
+
+/**********************************************************/
+/* login / signup / email-confirmation pages (allauth), themed to the sheet */
+.auth-content {
+  grid-row: 5;
+  grid-column: 2/12;
+  width: 100%;
+  text-align: left;
+  font-family: 'Roboto', sans-serif;
+  color: black;
+}
+.auth-title {
+  line-height: var(--title-lh);
+  font-size: var(--title-size);
+  margin: 0 0 26px 0;
+}
+.auth-text {
+  line-height: 26px;
+  font-size: 18px;
+}
+.auth-form p {
+  margin: 0 0 26px 0;
+}
+.auth-form label {
+  display: block;
+  float: none;
+  clear: none;
+  text-align: left;
+  line-height: 26px;
+}
+.auth-form input {
+  height: 26px;
+  width: 100%;
+  max-width: 312px;
+  box-sizing: border-box;
+  border: 2px solid black;
+  background: white;
+  padding: 0 4px;
+}
+.auth-button {
+  height: 52px;
+  padding: 0 26px;
+  font-size: 20px;
+  border: 2px solid black;
+  background: white;
+  cursor: pointer;
+}
+.auth-button:hover {
+  color: #67397D;
+}
+.auth-alt {
+  line-height: 26px;
+  font-size: 16px;
+  margin-top: 26px;
+}
+.auth-form .errorlist,
+.auth-form .helptext {
+  font-size: 14px;
+  line-height: 26px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/**********************************************************/
+/* admin manage page, themed to the sheet */
+.manage-content {
+  grid-row: 5;
+  grid-column: 1/13;
+  width: 100%;
+  text-align: left;
+  font-family: 'Roboto', sans-serif;
+  color: black;
+  overflow-x: auto;
+}
+.manage-title {
+  line-height: var(--title-lh);
+  font-size: var(--title-size);
+  margin: 0 0 26px 0;
+}
+.manage-subtitle {
+  line-height: 52px;
+  font-size: 24px;
+  margin: 26px 0 0 0;
+}
+.manage-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 26px;
+}
+.manage-table th,
+.manage-table td {
+  border: 1px solid var(--grey);
+  padding: 4px 8px;
+  text-align: left;
+  font-size: 14px;
+}
+
+/**********************************************************/
+/* mobile-friendly grid view
+   keeps --cell / --unit and reflows the header + content
+   onto a narrower 6-column sheet so everything still lands on grid lines */
+@media (max-width: 700px) {
+
+  /* sheet is exactly 6 cells wide (6 x 52 = 312px) with no outer gutter, so it
+     never overflows even the narrowest phones and its vertical lines coincide
+     with cell edges */
+  .background-grid,
+  .background-no-grid {
+    margin-top: var(--half);
+    width: 312px;
+  }
+
+  .background-grid {
+    --vn: 12; /* 312 / 26 = 12 vertical lines, one every half-cell */
+    height: 1352px;
+    --hn: 52; /* 1352 / 26 = 52 horizontal lines */
+  }
+  .background-grid-medium {
+    height: 1976px;
+    --hn: 76;
+  }
+  .background-grid-long {
+    height: 6240px;
+    --hn: 240;
+  }
+  .background-no-grid {
+    height: auto;
+  }
+
+  /* 6 columns; the header now needs 7 fixed 52px rows (title, banner x2,
+     three stacked nav links, moons) before content flows */
+  .gridbox {
+    grid-template-columns: repeat(6, var(--cell));
+    grid-template-rows: repeat(7, var(--cell)) min-content;
+    aspect-ratio: auto;
+    max-height: none;
+    height: auto;
+  }
+
+  /* header reflow */
+  .header-title {
+    grid-column: 2/7;
+  }
+  .header-banner {
+    grid-column: 1/7;
+    margin-left: 0;
+  }
+
+  /* writing / pics / adventure stack down the left, full width */
+  .site-links {
+    grid-column: 1/7;
+    width: 100%;
+    left: 0;
+    text-align: left;
+  }
+  .site-links1 { grid-row: 4; }
+  .site-links2 { grid-row: 5; }
+  .site-links3 { grid-row: 6; }
+
+  /* six moon phases across the full width on a single row */
+  .moon1, .moon2, .moon3, .moon4, .moon5, .moon6 {
+    grid-row: 7;
+  }
+  .moon1 { grid-column: 1; }
+  .moon2 { grid-column: 2; }
+  .moon3 { grid-column: 3; }
+  .moon4 { grid-column: 4; }
+  .moon5 { grid-column: 5; }
+  .moon6 { grid-column: 6; }
+  .moon7, .moon8 { display: none; }
+
+  /* content shifts down 3 rows (header grew from 4 to 7 rows) and widens to the
+     full 6 columns; every 1/13 or 2/12 span must be retargeted so it does not
+     spill into implicit columns */
+  .title-page-content,
+  .article-page-content,
+  .photoalbum-page-content { grid-row: 9; grid-column: 1/7; }
+
+  .sheet-nudge-x-1,
+  .sheet-nudge-x-2 {
+    margin-left: 0;
+  }
+  .sheet-widen-3 {
+    width: 100%;
+  }
+
+  /* movienights panels fill the 6-column sheet; tables scroll horizontally */
+  .mn-panel {
+    width: 100%;
+    max-width: 100%;
+  }
+  .mn-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .mn-input {
+    max-width: 100%;
+  }
+  .mn-header h1 {
+    font-size: 28px;
+    line-height: 39px;
+  }
+  .content-info,
+  .image-content-info,
+  .content-form { grid-row: 8; grid-column: 1/7; }
+  .content-form2 { grid-row: 9; grid-column: 1/7; }
+  .article-content { grid-row: 9; grid-column: 1/7; }
+  .image-page-container { grid-row: 9; grid-column: 1/7; }
+  .image-nav-row {
+    grid-template-columns: 26px 1fr 26px;
+    column-gap: 13px;
+  }
+  .image-nav-arrow {
+    width: 26px;
+    height: 78px;
+    font-size: 52px;
+  }
+  .photo-lightbox-nav-row {
+    grid-template-columns: 26px minmax(0, 1fr) 26px;
+    column-gap: 13px;
+  }
+  .photo-lightbox-center {
+    padding: 13px;
+  }
+  .edit-image-row {
+    grid-template-columns: 1fr;
+  }
+  .bottom-page-comments { grid-row: 10; grid-column: 1/7; }
+  .extra-content-so-I-can-scroll-more { grid-row: 11; }
+
+  /* writing / adventure infoboxes: 5 full cells + a half-cell = 286px, so the
+     double outline still lands on grid lines */
+  .infobox {
+    grid-template-columns: repeat(5, var(--cell)) var(--half);
+  }
+  .infobox-title {
+    grid-column: 1/5;
+    max-width: 200px;
+  }
+  .infobox-date {
+    grid-column: 5/7;
+  }
+  .infobox-admin-controls {
+    grid-column: 3/7;
+  }
+  .article-infobox-description {
+    grid-column: 1/7;
+  }
+
+  /* pics infoboxes: keep thumbnail + description side by side within 6 cols */
+  .photoalbum-infobox-description {
+    grid-column: 4/7;
+    width: auto;
+    right: 0;
+  }
+
+  /* album gallery: two thumbnails per row (2 x 130 + 26 gap = 286px) */
+  .photoalbum-display-grid {
+    grid-template-columns: repeat(2, 130px);
+  }
+  .photoalbum-images-pagination {
+    grid-column: 1/3;
+  }
+
+  /* comment boxes fill the content width instead of the fixed 517px */
+  .comment-text-input,
+  .comment-container {
+    width: 100%;
+    right: 0;
+    box-sizing: border-box;
+  }
+
+  /* auth + manage pages: shift below the taller mobile header, full width */
+  .auth-content {
+    grid-row: 8;
+    grid-column: 1/7;
+  }
+  .auth-form input {
+    max-width: 100%;
+  }
+  .manage-content {
+    grid-row: 8;
+    grid-column: 1/7;
+  }
 }

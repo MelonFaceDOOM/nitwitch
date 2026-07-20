@@ -30,5 +30,6 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),  # this is the login/signup stuff
     path('admin-controls/', include('accounts.urls')),  # this is "manage"
     path('photoalbums/', include('photoalbums.urls')),
+    path('movienights/', include('movienights.urls')),
     path('adventures/', include('adventures.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -2,16 +2,40 @@
 {% load static %}
 {% block content %}
 <section class="image-content-info">
-    <h1 id="image-title" class="content-page-title"><a href="{{ image_meta.album_url }}#album"> Return to album </a></h1>
+    <h1 id="image-title" class="content-page-title">
+        <a href="{% url 'photoalbums:photoalbum' image_meta.album_title %}?highlight={{ image.id }}#thumb-{{ image.id }}">Return to album</a>
+    </h1>
+    {% if image_meta.album_count %}
+    <p class="image-position">{{ image_meta.position }} / {{ image_meta.album_count }}</p>
+    {% endif %}
 </section>
 <div class="image-page-container">
-    <img class="image-page-image" src="{{ image.image.url }}">
-    <div class="image-vote-container">
-        <div class="image-vote">
-            <button class="vote-increase vote-button{% if image_vote_type == 'increase' %} increase-clicked{% endif %}" data-ambiguity-object-id="{{ image.id }}" title="increase ambiguity" data-ambiguity-vote-url="{% url 'photoalbums:ambiguity_vote' %}">☋</button>
-            <div class="ambiguity-container">Ambiguity: <span class="ambiguity">{{ image.ambiguity }}</span></div>
-            <button class="vote-decrease vote-button{% if image_vote_type == 'decrease' %} decrease-clicked{% endif %}" data-ambiguity-object-id="{{ image.id }}" title="decrease ambiguity" data-ambiguity-vote-url="{% url 'photoalbums:ambiguity_vote' %}">☊</button>
+    <div class="image-nav-row">
+        {% if prev_image %}
+        <a class="image-nav-arrow image-nav-prev" href="{% url 'photoalbums:image' prev_image.id %}#image-title" aria-label="Previous image" title="Previous (←)">‹</a>
+        {% else %}
+        <span class="image-nav-arrow image-nav-disabled" aria-hidden="true">‹</span>
+        {% endif %}
+
+        <div class="image-nav-center">
+            <img class="image-page-image" src="{{ image.image.url }}" data-full-url="{{ image.image.url }}" alt="{{ image.description }}">
+            {% if image.description %}
+            <p class="image-description">{{ image.description }}</p>
+            {% endif %}
+            <div class="image-vote-container">
+                <div class="image-vote">
+                    <button class="vote-increase vote-button{% if image_vote_type == 'increase' %} increase-clicked{% endif %}" data-ambiguity-object-id="{{ image.id }}" title="increase ambiguity" data-ambiguity-vote-url="{% url 'photoalbums:ambiguity_vote' %}">☋</button>
+                    <div class="ambiguity-container">Ambiguity: <span class="ambiguity">{{ image.ambiguity }}</span></div>
+                    <button class="vote-decrease vote-button{% if image_vote_type == 'decrease' %} decrease-clicked{% endif %}" data-ambiguity-object-id="{{ image.id }}" title="decrease ambiguity" data-ambiguity-vote-url="{% url 'photoalbums:ambiguity_vote' %}">☊</button>
+                </div>
+            </div>
         </div>
+
+        {% if next_image %}
+        <a class="image-nav-arrow image-nav-next" href="{% url 'photoalbums:image' next_image.id %}#image-title" aria-label="Next image" title="Next (→)">›</a>
+        {% else %}
+        <span class="image-nav-arrow image-nav-disabled" aria-hidden="true">›</span>
+        {% endif %}
     </div>
 </div>
 <section class="bottom-page-comments" id="comments">
@@ -67,8 +91,13 @@
     {% endif %}
 </section>
 
+<div id="photo-fullres" class="photo-fullres" hidden>
+    <div class="photo-fullres-backdrop" data-fullres-close></div>
+    <img class="photo-fullres-image" src="" alt="">
+</div>
 {% endblock %}
 
 {% block scripts %}
     <script type="text/javascript" src="{% static 'js/ambiguity_vote.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/photoalbum_lightbox.js' %}"></script>
 {% endblock %}

@@ -1,0 +1,55 @@
+{% extends "movienights/base_mn.html" %}
+
+{% block mn_body %}
+<section class="mn-panel mn-panel--flush">
+  <div class="mn-topbar">
+    <p class="mn-crumb">
+      <a href="{% url 'movienights:index' %}">Guilds</a>
+      / <a href="{% url 'movienights:guild_hub' guild.id %}">{{ guild.display_name }}</a>
+      / <a href="{% url 'movienights:movie_detail' guild.id movie.id %}">{{ movie.title }}</a>
+      / Review
+    </p>
+    {% if viewer %}
+    <div class="mn-topbar-user">
+      <span>{{ viewer.display_name }}</span>
+      <form method="post" action="{% url 'movienights:clear_viewer' %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{% url 'movienights:index' %}">
+        <button type="submit" class="mn-link-btn">Log out</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+
+  {% for flash in flashes %}
+  <p class="mn-flash mn-flash--{{ flash.level }}">{{ flash.message }}</p>
+  {% endfor %}
+
+  <div class="mn-pad">
+    <header class="mn-header">
+      <h1>{% if viewer_review %}Edit review{% else %}Write review{% endif %}</h1>
+    </header>
+    <p class="mn-detail-meta">{{ movie.title }}</p>
+
+    <form class="mn-review-form" method="post" action="{% url 'movienights:movie_review' guild.id movie.id %}">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{% url 'movienights:movie_detail' guild.id movie.id %}">
+      <label class="mn-sr-only" for="review-text">Review</label>
+      <textarea
+        class="mn-textarea"
+        id="review-text"
+        name="review_text"
+        rows="8"
+        maxlength="{{ review_max_len }}"
+        placeholder="Write your review…"
+        required
+      >{% if viewer_review %}{{ viewer_review.review_text }}{% endif %}</textarea>
+      <div class="mn-actions">
+        <button type="submit" class="mn-btn">Save</button>
+        <a class="mn-btn mn-btn--quiet" href="{% url 'movienights:movie_detail' guild.id movie.id %}">Cancel</a>
+        <span class="mn-meta">max {{ review_max_len }} characters</span>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-content">
+    <h2 class="auth-title">Confirm Email</h2>
+    {% if confirmation %}
+    <p class="auth-text">
+        Confirm that <strong>{{ confirmation.email_address.email }}</strong> is your email address.
+    </p>
+    <form class="auth-form" method="post" action="{% url 'account_confirm_email' confirmation.key %}">
+        {% csrf_token %}
+        {% if redirect_field_value %}
+        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+        {% endif %}
+        <button class="auth-button" type="submit">Confirm</button>
+    </form>
+    {% else %}
+    <p class="auth-text">
+        This confirmation link is invalid or has expired. Try
+        <a href="{% url 'account_signup' %}">signing up</a> again.
+    </p>
+    {% endif %}
+</div>
+{% endblock %}

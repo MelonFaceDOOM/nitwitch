@@ -1,0 +1,98 @@
+{% extends "movienights/base_mn.html" %}
+
+{% block mn_body %}
+<section class="mn-panel mn-panel--flush">
+  <div class="mn-topbar">
+    <p class="mn-crumb">
+      <a href="{% url 'movienights:index' %}">Guilds</a>
+      / <a href="{% url 'movienights:guild_hub' guild.id %}">{{ guild.display_name }}</a>
+      / <a href="{% url 'movienights:movie_detail' guild.id movie.id %}">{{ movie.title }}</a>
+      / Edit
+    </p>
+    {% if viewer %}
+    <div class="mn-topbar-user">
+      <span>{{ viewer.display_name }}</span>
+      <form method="post" action="{% url 'movienights:clear_viewer' %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{% url 'movienights:index' %}">
+        <button type="submit" class="mn-link-btn">Log out</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+
+  {% for flash in flashes %}
+  <p class="mn-flash mn-flash--{{ flash.level }}">{{ flash.message }}</p>
+  {% endfor %}
+
+  <div class="mn-pad">
+    <header class="mn-header">
+      <h1>Edit movie</h1>
+    </header>
+    <p class="mn-detail-meta">{{ movie.title }}</p>
+
+    <form class="mn-inline-form" method="post" action="{% url 'movienights:movie_rename' guild.id movie.id %}">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ edit_url }}">
+      <label for="rename-title">Rename</label>
+      <input
+        class="mn-input mn-input--wide"
+        type="text"
+        id="rename-title"
+        name="title"
+        value="{{ movie.title }}"
+        maxlength="256"
+        required
+      >
+      <button type="submit" class="mn-btn">Save title</button>
+    </form>
+
+    {% if movie.is_watched %}
+    <form class="mn-inline-form" method="post" action="{% url 'movienights:movie_change_date_watched' guild.id movie.id %}">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ edit_url }}">
+      <label for="date-watched">Date watched</label>
+      <input
+        class="mn-input"
+        type="text"
+        id="date-watched"
+        name="date_watched"
+        value="{% if movie.date_watched %}{{ movie.date_watched|date:'Y-m-d' }}{% endif %}"
+        placeholder="yyyy-mm-dd"
+        required
+      >
+      <button type="submit" class="mn-btn">Update</button>
+    </form>
+    {% endif %}
+
+    <form class="mn-inline-form" method="post" action="{% url 'movienights:movie_transfer' guild.id movie.id %}">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ edit_url }}">
+      <label for="transfer-user">Transfer chooser</label>
+      <input
+        class="mn-input"
+        type="text"
+        id="transfer-user"
+        name="user_id"
+        inputmode="numeric"
+        placeholder="Discord user id"
+        required
+      >
+      <button type="submit" class="mn-btn">Transfer</button>
+    </form>
+
+    {% if not movie.is_watched %}
+    <form class="mn-inline-form" method="post" action="{% url 'movienights:movie_remove' guild.id %}">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{% url 'movienights:guild_hub' guild.id %}">
+      <input type="hidden" name="movie_id" value="{{ movie.id }}">
+      <button type="submit" class="mn-btn mn-btn--quiet mn-btn--danger">Remove suggestion</button>
+    </form>
+    {% endif %}
+
+    <div class="mn-actions">
+      <a class="mn-btn mn-btn--quiet" href="{% url 'movienights:movie_detail' guild.id movie.id %}">Back</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

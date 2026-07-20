@@ -1,0 +1,126 @@
+{% extends "movienights/base_mn.html" %}
+
+{% block mn_body %}
+<section class="mn-panel mn-panel--flush">
+  <div class="mn-topbar">
+    <p class="mn-crumb">
+      <a href="{% url 'movienights:index' %}">Guilds</a>
+      / {{ guild.display_name }}
+    </p>
+    {% if viewer %}
+    <div class="mn-topbar-user">
+      <span>{{ viewer.display_name }}</span>
+      <form method="post" action="{% url 'movienights:clear_viewer' %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{% url 'movienights:index' %}">
+        <button type="submit" class="mn-link-btn">Log out</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+
+  {% for flash in flashes %}
+  <p class="mn-flash mn-flash--{{ flash.level }}">{{ flash.message }}</p>
+  {% endfor %}
+
+  <nav class="mn-task-list mn-task-list--row">
+    <a class="mn-task" href="{% url 'movienights:movie_list' guild.id %}?view=top">
+      <span class="mn-task-title">Past Movienights</span>
+    </a>
+    <span class="mn-task-sep" aria-hidden="true">·</span>
+    <a class="mn-task" href="{% url 'movienights:movie_list' guild.id %}?view=unwatched">
+      <span class="mn-task-title">Suggestions</span>
+    </a>
+  </nav>
+
+  <div class="mn-pad">
+    {% if viewer %}
+    <form class="mn-inline-form" method="post" action="{% url 'movienights:movie_suggest' guild.id %}">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{% url 'movienights:guild_hub' guild.id %}">
+      <label for="suggest-title">Suggest a movie</label>
+      <input
+        class="mn-input mn-input--wide"
+        type="text"
+        id="suggest-title"
+        name="title"
+        maxlength="200"
+        placeholder="Title"
+        required
+      >
+      <button type="submit" class="mn-btn">Suggest</button>
+    </form>
+    {% else %}
+    <p class="mn-empty">
+      <a href="{% url 'movienights:discord_oauth_start' %}?next={% url 'movienights:guild_hub' guild.id %}">Verify with Discord</a>
+      to suggest a movie.
+    </p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="mn-panel mn-panel--flush">
+  <div class="mn-topbar">
+    <p class="mn-crumb">All server movies</p>
+  </div>
+
+  <div class="mn-toolbar mn-pad">
+    <form class="mn-toolbar-row" method="get" action="{% url 'movienights:guild_hub' guild.id %}">
+      <label for="hub-movie-q">Search</label>
+      <input class="mn-input" type="search" id="hub-movie-q" name="q" value="{{ q }}" placeholder="Title contains…">
+      <button type="submit" class="mn-btn">Search</button>
+    </form>
+    <p class="mn-count">{{ page_obj.paginator.count }} movie{{ page_obj.paginator.count|pluralize }}</p>
+  </div>
+
+  {% if movies %}
+  <div class="mn-table-wrap">
+    <table class="mn-table">
+      <thead>
+        <tr>
+          <th class="mn-col-title">Title</th>
+          <th class="mn-col-user">Submitter</th>
+          <th class="mn-col-date">Added</th>
+          <th class="mn-col-status">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for movie in movies %}
+        <tr>
+          <td class="mn-col-title">
+            <a href="{% url 'movienights:movie_detail' guild.id movie.id %}">{{ movie.title }}</a>
+          </td>
+          <td class="mn-col-user">{{ movie.user.display_name }}</td>
+          <td class="mn-col-date">{% if movie.date_suggested %}{{ movie.date_suggested|date:"Y-m-d" }}{% else %}—{% endif %}</td>
+          <td class="mn-col-status">
+            {% if movie.is_watched %}
+            <span class="mn-badge">watched</span>
+            {% else %}
+            <span class="mn-badge mn-badge--open">unwatched</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="mn-pagination">
+    <span class="step-links">
+      {% if page_obj.has_previous %}
+        <a href="?q={{ q }}&page=1">&laquo; first</a>
+        <a href="?q={{ q }}&page={{ page_obj.previous_page_number }}">previous</a>
+      {% endif %}
+      <span class="current">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+      </span>
+      {% if page_obj.has_next %}
+        <a href="?q={{ q }}&page={{ page_obj.next_page_number }}">next</a>
+        <a href="?q={{ q }}&page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+      {% endif %}
+    </span>
+  </div>
+  {% else %}
+  <p class="mn-empty mn-pad">{% if q %}No movies match that title.{% else %}No movies in this server yet.{% endif %}</p>
+  {% endif %}
+</section>
+{% endblock %}

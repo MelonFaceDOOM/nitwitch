@@ -4,7 +4,8 @@ from django.views import generic
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.urls import reverse
 from django.shortcuts import get_object_or_404, render
-from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from accounts.permissions import admin_required
 from django.core.paginator import Paginator
 from django.db import transaction
 from .parsers.validate_game_cards import adventure_is_valid
@@ -52,7 +53,7 @@ def game_content(request, title):
     return JsonResponse(adventure_dict)
 
 
-@login_required
+@admin_required
 @transaction.atomic
 def submit_adventures(request):
     if request.method == "POST":
@@ -92,7 +93,8 @@ def submit_adventures(request):
         return HttpResponse("Invalid request method", status=405)
 
 
-@login_required
+@admin_required
+@require_POST
 def delete_adventure(request, adventure_id):
     article = get_object_or_404(Adventure, pk=adventure_id)
     article.delete()

@@ -1,5 +1,5 @@
 from django.db import models
-from PIL import Image
+from PIL import Image, ImageOps
 from io import BytesIO
 from django.core.files import File
 import secrets
@@ -44,8 +44,10 @@ class PhotoAlbumImage(models.Model):
             self.resize_image()
 
     def resize_image(self):
-        # Open the original image
-        image = Image.open(self.image)
+        # Apply EXIF orientation so phone photos aren't sideways in thumbs
+        # while browsers still show the full image upright.
+        self.image.open()
+        image = ImageOps.exif_transpose(Image.open(self.image))
 
         # Define the maximum size for the smaller image
         max_size = (256, 256)

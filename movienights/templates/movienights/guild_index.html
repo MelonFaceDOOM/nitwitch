@@ -1,0 +1,59 @@
+{% extends "movienights/base_mn.html" %}
+
+{% block mn_body %}
+{% if verified %}
+<section class="mn-panel mn-panel--flush">
+  <div class="mn-topbar">
+    <p class="mn-crumb">Guilds</p>
+    <div class="mn-topbar-user">
+      <span>{{ viewer.display_name }}</span>
+      <form method="post" action="{% url 'movienights:clear_viewer' %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{% url 'movienights:index' %}">
+        <button type="submit" class="mn-link-btn">Log out</button>
+      </form>
+    </div>
+  </div>
+
+  {% if guilds %}
+  <nav class="mn-task-list">
+    {% for guild in guilds %}
+    <a class="mn-guild" href="{% url 'movienights:guild_hub' guild.id %}">
+      <span class="mn-guild-title">{{ guild.display_name }}</span>
+      <span class="mn-guild-meta">
+        {{ guild.movie_count }} movie{{ guild.movie_count|pluralize }}
+      </span>
+    </a>
+    {% endfor %}
+  </nav>
+  {% else %}
+  <p class="mn-empty mn-pad">
+    None of your Discord servers have movie data yet.
+    Add melonbot to a server and use it once, then verify again.
+  </p>
+  {% endif %}
+</section>
+{% else %}
+<section class="mn-panel">
+  <header class="mn-header">
+    <h1>Movienights</h1>
+    <p class="mn-subhead">
+      Verify with Discord to see your servers.
+    </p>
+  </header>
+  {% if oauth_configured %}
+  <p class="mn-viewer-form">
+    <a class="mn-btn" href="{% url 'movienights:discord_oauth_start' %}?next={% url 'movienights:index' %}">Verify with Discord</a>
+  </p>
+  {% else %}
+  <p class="mn-empty">Discord OAuth is not configured (set DISCORD_CLIENT_ID / SECRET).</p>
+  {% endif %}
+  {% if oauth_error_message %}
+  <p class="mn-empty">{{ oauth_error_message }}</p>
+  {% endif %}
+  {% if oauth_warning == 'name_write_failed' %}
+  <p class="mn-empty">Verified, but the site could not update your display name in the database.</p>
+  {% endif %}
+</section>
+{% endif %}
+{% endblock %}

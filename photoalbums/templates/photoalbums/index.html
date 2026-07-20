@@ -13,9 +13,13 @@
                 {{ photoalbum.pub_date |date:"M d, Y" }}
             </div>
             <a class="photoalbum-infobox-thumbnail" href="{% url 'photoalbums:photoalbum' photoalbum.title %}">
-                {% if photoalbum.images %}
+                {% if photoalbum.images.exists %}
                 {% with image=photoalbum.images.all|dictsort:"ambiguity"|last %}
-                    <img class="photoalbum-thumbnail-image" src="{{ image.thumbnail.url }}">
+                    {% if image.thumbnail %}
+                    <img class="photoalbum-thumbnail-image" src="{{ image.thumbnail.url }}" alt="">
+                    {% elif image.image %}
+                    <img class="photoalbum-thumbnail-image" src="{{ image.image.url }}" alt="">
+                    {% endif %}
                 {% endwith %}
                 {% endif %}
             </a>
@@ -25,11 +29,12 @@
                 {% endif %}
             </div>
             <div class="photoalbum-infobox-admin-controls infobox-admin-controls">
-                {% if perms.photoalbums.delete_photoalbum %}
-                    <a href = "{% url 'photoalbums:delete_photoalbum' photoalbum.id %}">Delete</a>
-                {% endif %}
-                {% if perms.photoalbums.change_photoalbum %}
-                    <a href = "{% url 'photoalbums:edit_photoalbum' photoalbum.id %}">Edit</a>
+                {% if user.is_staff %}
+                    <a href="{% url 'photoalbums:edit_photoalbum' photoalbum.id %}">Edit</a>
+                    <form class="admin-inline-form" action="{% url 'photoalbums:delete_photoalbum' photoalbum.id %}" method="post" onsubmit="return confirm('Delete this photo album?');">
+                        {% csrf_token %}
+                        <button type="submit" class="admin-link-button">Delete</button>
+                    </form>
                 {% endif %}
             </div>
         </div>
@@ -56,7 +61,7 @@
 <p>No photo albums are available.</p>
 {% endif %}
 
-{% if perms.photoalbums.add_photoalbum %}
+{% if user.is_staff %}
 <div class="create-content-button">
     <p>
         <a href="{% url 'photoalbums:create_photoalbum' %}">Create a photo album.</a>

@@ -1,11 +1,12 @@
 from .models import Article, ArticleImage, ArticleComment, ArticleCommentAmbiguityVote
 from django.views import generic
 from django.http import HttpResponseRedirect, JsonResponse
-from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.urls import reverse
 from django.shortcuts import get_object_or_404, render
 from django.core.paginator import Paginator
 from accounts.models import is_ip_banned
+from accounts.permissions import admin_required
 from django.http import HttpResponseForbidden
 
 
@@ -57,13 +58,13 @@ def article(request, title):
     return render(request, 'articles/article.html', {'article': article, 'comments': paginated_comments})
 
 
-@login_required
+@admin_required
 def create_article(request):
     article = Article.create_placeholder()
     return HttpResponseRedirect(reverse('articles:edit_article', args=(article.id,)))
 
 
-@login_required
+@admin_required
 def edit_article(request, article_id):
     article = get_object_or_404(Article, pk=article_id)
     error_message = None
@@ -89,7 +90,7 @@ def edit_article(request, article_id):
     return render(request, 'articles/edit_article.html', {'article': article, 'error_message': error_message})
 
 
-@login_required
+@admin_required
 def submit_images(request, article_id):
     article = get_object_or_404(Article, pk=article_id)
     images = request.FILES.getlist("images")
@@ -99,7 +100,8 @@ def submit_images(request, article_id):
     return HttpResponseRedirect(reverse('articles:edit_article', args=(article.id,)))
 
 
-@login_required
+@admin_required
+@require_POST
 def delete_article(request, article_id):
     article = get_object_or_404(Article, pk=article_id)
     article.delete()

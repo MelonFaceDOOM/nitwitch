@@ -1,14 +1,17 @@
 from .models import PhotoAlbum, PhotoAlbumImage, ImageAmbiguityVote, PhotoAlbumComment, ImageComment,\
     ImageCommentAmbiguityVote, PhotoAlbumCommentAmbiguityVote
 from django.views import generic
-from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from accounts.models import is_ip_banned
+from accounts.permissions import admin_required
 from django.http import HttpResponseForbidden
+import json
+import math
 
 
 class IndexView(generic.ListView):
@@ -23,6 +26,9 @@ class IndexView(generic.ListView):
         context = super().get_context_data(**kwargs)
         context['background_grid_class'] = 'background-grid background-grid-medium'
         return context
+
+
+ALBUM_PAGE_SIZE = 20
 
 
 def photoalbum(request, title, album_page):
@@ -45,11 +51,37 @@ def photoalbum(request, title, album_page):
             elif vote_dict[image.id] == 'decrease':
                 image.vote_type = 'decrease'
         images.append(image)
-    images = sorted(images, key=lambda x: x.ambiguity, reverse=True)
-    paginated_images = Paginator(images, 20)
+    images = sorted(images, key=lambda x: (-x.ambiguity, x.id))
+
+    highlight_id = request.GET.get('highlight')
+    if highlight_id:
+        try:
+            highlight_id = int(highlight_id)
+            ids = [img.id for img in images]
+            if highlight_id in ids:
+                idx = ids.index(highlight_id)
+                target_page = max(1, math.ceil((idx + 1) / ALBUM_PAGE_SIZE))
+                if int(album_page) != target_page:
+                    url = reverse('photoalbums:photoalbum', args=[title, target_page])
+                    return HttpResponseRedirect(f"{url}?highlight={highlight_id}#thumb-{highlight_id}")
+        except (TypeError, ValueError):
+            highlight_id = None
+
+    paginated_images = Paginator(images, ALBUM_PAGE_SIZE)
     paginated_images = paginated_images.page(album_page)
 
-    # _comments = PhotoAlbumComment.objects.filter(photoalbum=photoalbum)
+    lightbox_images = []
+    for img in paginated_images.object_list:
+        thumb_url = img.thumbnail.url if img.thumbnail else (img.image.url if img.image else '')
+        full_url = img.image.url if img.image else ''
+        lightbox_images.append({
+            'id': img.id,
+            'thumb': thumb_url,
+            'full': full_url,
+            'description': img.description or '',
+            'detailUrl': reverse('photoalbums:image', args=[img.id]),
+        })
+
     comment_votes = PhotoAlbumCommentAmbiguityVote.objects.filter(ip_address=ip_address, photoalbum_comment__in=photoalbum.comments.all())
     vote_dict = {vote.photoalbum_comment_id: vote.vote_type for vote in comment_votes}
 
@@ -72,9 +104,14 @@ def photoalbum(request, title, album_page):
     if not comment_page:
         comment_page = 1
     paginated_comments = paginated_comments.page(comment_page)
-    return render(request, 'photoalbums/photoalbum.html', {'photoalbum_meta': photoalbum_meta, 'images': paginated_images,
-                                                           'comments': paginated_comments,
-                                                           'background_grid_class': 'background-grid background-grid-long'})
+    return render(request, 'photoalbums/photoalbum.html', {
+        'photoalbum_meta': photoalbum_meta,
+        'images': paginated_images,
+        'comments': paginated_comments,
+        'background_grid_class': 'background-grid background-grid-long',
+        'lightbox_images_json': json.dumps(lightbox_images),
+        'highlight_id': highlight_id,
+    })
 
 
 def get_image_meta_info(image):
@@ -99,6 +136,20 @@ def image(request, image_id):
         vote_type = vote.vote_type
     else:
         vote_type = None
+
+    # Same order as the album grid (ambiguity desc) so next/prev match browsing.
+    album_images = list(
+        PhotoAlbumImage.objects.filter(album=image.album).order_by('-ambiguity', 'id')
+    )
+    prev_image = next_image = None
+    if len(album_images) > 1:
+        ids = [img.id for img in album_images]
+        idx = ids.index(image.id)
+        prev_image = album_images[(idx - 1) % len(album_images)]
+        next_image = album_images[(idx + 1) % len(album_images)]
+        image_meta['position'] = idx + 1
+        image_meta['album_count'] = len(album_images)
+
     _comments = ImageComment.objects.filter(image=image)
     comment_votes = ImageCommentAmbiguityVote.objects.filter(ip_address=ip_address, image_comment__in=image.comments.all())
     vote_dict = {vote.image_comment_id: vote.vote_type for vote in comment_votes}
@@ -122,15 +173,21 @@ def image(request, image_id):
     if not comment_page:
         comment_page = 1
     paginated_comments = paginated_comments.page(comment_page)
-    return render(request, 'photoalbums/image.html', {'image_meta': image_meta, 'image': image,
-                                                      'image_vote_type': vote_type, 'comments': paginated_comments})
+    return render(request, 'photoalbums/image.html', {
+        'image_meta': image_meta,
+        'image': image,
+        'image_vote_type': vote_type,
+        'comments': paginated_comments,
+        'prev_image': prev_image,
+        'next_image': next_image,
+    })
 
-@login_required
+@admin_required
 def create_photoalbum(request):
     photoalbum = PhotoAlbum.create_placeholder()
     return HttpResponseRedirect(reverse('photoalbums:edit_photoalbum', args=(photoalbum.id,)))
 
-@login_required
+@admin_required
 def edit_photoalbum(request, photoalbum_id):
     photoalbum = get_object_or_404(PhotoAlbum, pk=photoalbum_id)
     error_message = None
@@ -152,7 +209,7 @@ def edit_photoalbum(request, photoalbum_id):
             error_message = f"the following error occurred: {e}"
     return render(request, 'photoalbums/edit_photoalbum.html', {'photoalbum': photoalbum, 'error_message': error_message})
 
-@login_required
+@admin_required
 def submit_images(request, photoalbum_id):
     photoalbum = get_object_or_404(PhotoAlbum, pk=photoalbum_id)
     images = request.FILES.getlist("images")
@@ -161,11 +218,35 @@ def submit_images(request, photoalbum_id):
         photoalbum_image.save()
     return HttpResponseRedirect(reverse('photoalbums:edit_photoalbum', args=(photoalbum.id,)))
 
-@login_required
+@admin_required
+@require_POST
 def delete_photoalbum(request, photoalbum_id):
     photoalbum = get_object_or_404(PhotoAlbum, pk=photoalbum_id)
     photoalbum.delete()
     return HttpResponseRedirect(reverse('photoalbums:index'))
+
+
+@admin_required
+@require_POST
+def update_image(request, image_id):
+    image = get_object_or_404(PhotoAlbumImage, pk=image_id)
+    PhotoAlbumImage.objects.filter(pk=image.pk).update(
+        description=request.POST.get('description', '')
+    )
+    return HttpResponseRedirect(reverse('photoalbums:edit_photoalbum', args=(image.album_id,)))
+
+
+@admin_required
+@require_POST
+def delete_image(request, image_id):
+    image = get_object_or_404(PhotoAlbumImage, pk=image_id)
+    album_id = image.album_id
+    if image.thumbnail:
+        image.thumbnail.delete(save=False)
+    if image.image:
+        image.image.delete(save=False)
+    image.delete()
+    return HttpResponseRedirect(reverse('photoalbums:edit_photoalbum', args=(album_id,)))
 
 
 def execute_vote_logic(ambiguity_object, vote_object_type, ip_address, vote_type):

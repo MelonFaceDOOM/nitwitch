@@ -19,11 +19,12 @@
                 Views: {{ article.view_count }}
             </div>
             <div class="article-infobox-admin-controls infobox-admin-controls">
-                {% if perms.articles.delete_article %}
-                    <a href = "{% url 'articles:delete_article' article.id %}">Delete</a>
-                {% endif %}
-                {% if perms.articles.change_article %}
-                    <a href = "{% url 'articles:edit_article' article.id %}">Edit</a>
+                {% if user.is_staff %}
+                    <a href="{% url 'articles:edit_article' article.id %}">Edit</a>
+                    <form class="admin-inline-form" action="{% url 'articles:delete_article' article.id %}" method="post" onsubmit="return confirm('Delete this article?');">
+                        {% csrf_token %}
+                        <button type="submit" class="admin-link-button">Delete</button>
+                    </form>
                 {% endif %}
             </div>
         </div>
@@ -50,7 +51,7 @@
     {% else %}
     <p>No articles are available.</p>
     {% endif %}
-    {% if perms.articles.add_article %}
+    {% if user.is_staff %}
     <div class="create-content-button">
     <p>
         <a href="{% url 'articles:create_article' %}">Write an article.</a>
