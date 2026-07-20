@@ -186,7 +186,15 @@ if config.DEV:
 
 else:
     DEBUG = False
-    ALLOWED_HOSTS = ['nitwitch.com', 'www.nitwitch.com']
+    # Keep ddns aliases used by the home-server / DDNS entry points.
+    # (www.nitiwtch.ddns.net is the historical spelling from prod — leave it.)
+    ALLOWED_HOSTS = [
+        'nitwitch.com',
+        'www.nitwitch.com',
+        'nitwitch.ddns.net',
+        'www.nitwitch.ddns.net',
+        'www.nitiwtch.ddns.net',
+    ]
     # STATICFILES_STORAGE = 'custom_storages.StaticStorage'
     # this is a subclass of S3Boto3Storage and will route static files to the AWS static bucket
 
