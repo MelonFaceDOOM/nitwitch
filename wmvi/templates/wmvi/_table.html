@@ -1,0 +1,22 @@
+{% if table.rows %}
+<table class="wmvi-table">
+    <thead>
+        <tr>
+            {% for col in table.columns %}
+            <th>{{ col }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in table.rows %}
+        <tr>
+            {% for cell in row %}
+            <td>{{ cell }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="wmvi-caption">(no rows)</p>
+{% endif %}

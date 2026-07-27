@@ -32,4 +32,5 @@ urlpatterns = [
     path('photoalbums/', include('photoalbums.urls')),
     path('movienights/', include('movienights.urls')),
     path('adventures/', include('adventures.urls')),
+    path('wmvi/', include('wmvi.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

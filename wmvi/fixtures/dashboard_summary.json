@@ -1,0 +1,52 @@
+{
+  "generated_at_utc": "2026-07-27T14:00:00Z",
+  "ingestion_daily": [
+    {"day": "2026-07-20", "platform": "youtube", "n": 120},
+    {"day": "2026-07-20", "platform": "podcast", "n": 45},
+    {"day": "2026-07-21", "platform": "youtube", "n": 98},
+    {"day": "2026-07-21", "platform": "podcast", "n": 52},
+    {"day": "2026-07-22", "platform": "youtube", "n": 140},
+    {"day": "2026-07-22", "platform": "podcast", "n": 38}
+  ],
+  "is_en_counts_7d": [
+    {"day": "2026-07-20", "platform": "youtube", "is_en_true": 80, "is_en_false": 30, "is_en_null": 10},
+    {"day": "2026-07-20", "platform": "podcast", "is_en_true": 40, "is_en_false": 3, "is_en_null": 2},
+    {"day": "2026-07-21", "platform": "youtube", "is_en_true": 70, "is_en_false": 20, "is_en_null": 8},
+    {"day": "2026-07-21", "platform": "podcast", "is_en_true": 48, "is_en_false": 2, "is_en_null": 2}
+  ],
+  "term_matches_per_day": [
+    {"day": "2026-07-20", "matches": 15},
+    {"day": "2026-07-21", "matches": 22},
+    {"day": "2026-07-22", "matches": 18}
+  ],
+  "podcast_transcription_summary": [
+    {
+      "total": 1000,
+      "completed": 720,
+      "in_progress": 40,
+      "percent_completion": 72.0,
+      "avg_completed_per_day_30d": 24.5,
+      "estimated_finish_date": "2026-08-15"
+    }
+  ],
+  "podcast_transcriptions_per_day": [
+    {"day": "2026-07-20", "transcriptions": 20},
+    {"day": "2026-07-21", "transcriptions": 28},
+    {"day": "2026-07-22", "transcriptions": 25}
+  ],
+  "youtube_transcription_summary": [
+    {
+      "total": 5000,
+      "completed": 2100,
+      "in_progress": 120,
+      "percent_completion": 42.0,
+      "avg_completed_per_day_30d": 55.0,
+      "estimated_finish_date": "2026-09-01"
+    }
+  ],
+  "youtube_transcriptions_per_day": [
+    {"day": "2026-07-20", "transcriptions": 50},
+    {"day": "2026-07-21", "transcriptions": 61},
+    {"day": "2026-07-22", "transcriptions": 47}
+  ]
+}

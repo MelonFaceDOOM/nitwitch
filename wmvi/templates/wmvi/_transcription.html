@@ -1,0 +1,29 @@
+<section class="wmvi-section">
+    <h2 class="wmvi-subtitle">{{ section.title }}</h2>
+
+    {% if section.metrics %}
+    <div class="wmvi-metrics">
+        {% for label, value in section.metrics %}
+        <div class="wmvi-metric">
+            <div class="wmvi-metric-label">{{ label }}</div>
+            <div class="wmvi-metric-value">{{ value }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="wmvi-caption">(no summary rows)</p>
+    {% endif %}
+
+    {% if section.summary_table.rows %}
+    <details class="wmvi-details">
+        <summary>Summary details</summary>
+        {% include "wmvi/_table.html" with table=section.summary_table %}
+    </details>
+    {% endif %}
+
+    <p class="wmvi-note">Completions per day (last 30 days)</p>
+    <div class="wmvi-chart-wrap">
+        <canvas id="{{ section.chart_id }}"></canvas>
+    </div>
+    {% include "wmvi/_table.html" with table=section.daily_table %}
+</section>

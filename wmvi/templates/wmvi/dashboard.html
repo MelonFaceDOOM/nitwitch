@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'wmvi.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="wmvi-content">
+    <h1 class="wmvi-title">WMVI Pipeline Dashboard</h1>
+
+    {% if error %}
+    <p class="wmvi-error">Failed to load dashboard data: {{ error }}</p>
+    <p class="wmvi-caption">Source: <code>{{ source_path }}</code></p>
+    {% else %}
+
+    <p class="wmvi-caption">Generated at: {{ generated_at|default:"—" }}</p>
+    <p class="wmvi-caption">Source: <code>{{ source_path }}</code></p>
+
+    <section class="wmvi-section">
+        <h2 class="wmvi-subtitle">Ingestion by platform (last 30 days)</h2>
+        <div class="wmvi-chart-wrap">
+            <canvas id="ingestion-chart"></canvas>
+        </div>
+        {% include "wmvi/_table.html" with table=ingestion_table %}
+    </section>
+
+    <section class="wmvi-section">
+        <h2 class="wmvi-subtitle">is_en counts by day/platform (last 7 days)</h2>
+        {% include "wmvi/_table.html" with table=is_en_table %}
+        <p class="wmvi-note">Daily totals across all platforms</p>
+        <div class="wmvi-chart-wrap">
+            <canvas id="is-en-chart"></canvas>
+        </div>
+    </section>
+
+    <section class="wmvi-section">
+        <h2 class="wmvi-subtitle">Term matching per day (last 30 days)</h2>
+        <div class="wmvi-chart-wrap">
+            <canvas id="term-chart"></canvas>
+        </div>
+        {% include "wmvi/_table.html" with table=term_table %}
+    </section>
+
+    {% include "wmvi/_transcription.html" with section=podcast %}
+    {% include "wmvi/_transcription.html" with section=youtube %}
+
+    {{ ingestion_chart|json_script:"wmvi-ingestion-data" }}
+    {{ is_en_chart|json_script:"wmvi-is-en-data" }}
+    {{ term_chart|json_script:"wmvi-term-data" }}
+    {{ podcast.chart_data|json_script:"wmvi-podcast-data" }}
+    {{ youtube.chart_data|json_script:"wmvi-youtube-data" }}
+    <script src="{% static 'js/wmvi_charts.js' %}"></script>
+    {% endif %}
+</div>
+{% endblock %}

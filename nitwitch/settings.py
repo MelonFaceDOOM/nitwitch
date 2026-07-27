@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'adventures.apps.AdventuresConfig',
     'movienights.apps.MovienightsConfig',
     'scheduling.apps.SchedulingConfig',
+    'wmvi.apps.WmviConfig',
     #'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -213,3 +214,10 @@ else:
 DISCORD_CLIENT_ID = config.DISCORD_CLIENT_ID
 DISCORD_CLIENT_SECRET = config.DISCORD_CLIENT_SECRET
 DISCORD_OAUTH_REDIRECT_URI = config.DISCORD_OAUTH_REDIRECT_URI
+
+# WMVI pipeline dashboard JSON (fixed filename; uploader overwrites in place)
+WMVI_DASHBOARD_JSON_PATH = getattr(
+    config,
+    'WMVI_DASHBOARD_JSON_PATH',
+    '/mnt/md0/nitwitch_dl/uploads/dashboard_summary.json',
+)
