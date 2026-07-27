@@ -166,6 +166,8 @@ ACCOUNT_LOGOUT_REDIRECT_URL = 'index'
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 STATICFILES_DIRS = (os.path.join(BASE_DIR, config.STATICFILES_LOCATION),)
+# collectstatic destination (e.g. nginx alias /var/www/static). Set in config.py on prod.
+STATIC_ROOT = getattr(config, 'STATIC_ROOT', None)
 DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 MEDIA_ROOT = os.path.join(BASE_DIR, config.MEDIAFILES_LOCATION)
 # DEFAULT_FILE_STORAGE = 'custom_storages.MediaStorage'
